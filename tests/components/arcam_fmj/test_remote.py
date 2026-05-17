@@ -3,7 +3,15 @@
 from collections.abc import Generator
 from unittest.mock import Mock, call, patch
 
-from arcam.fmj import ConnectionFailed, RC5CodeColor, RC5CodeNavigation, RC5CodeToggle
+from arcam.fmj import (
+    ConnectionFailed,
+    HdmiOutput,
+    RC5CodeColor,
+    RC5CodeMenuAccess,
+    RC5CodeNavigation,
+    RC5CodePlayback,
+    RC5CodeToggle,
+)
 from arcam.fmj.state import State
 import pytest
 from syrupy.assertion import SnapshotAssertion
@@ -101,6 +109,12 @@ async def test_turn_on_off(
         ("blue", "send_color", RC5CodeColor.BLUE),
         ("radio", "send_toggle", RC5CodeToggle.RADIO),
         ("display_brightness", "send_toggle", RC5CodeToggle.DISPLAY_BRIGHTNESS),
+        ("play", "send_playback", RC5CodePlayback.PLAY),
+        ("eject", "send_playback", RC5CodePlayback.EJECT),
+        ("bass", "send_menu_access", RC5CodeMenuAccess.BASS),
+        ("speaker_trim", "send_menu_access", RC5CodeMenuAccess.SPEAKER_TRIM),
+        ("hdmi_out_1", "set_hdmi_output", HdmiOutput.OUT_1),
+        ("hdmi_out_1_2", "set_hdmi_output", HdmiOutput.OUT_1_2),
     ],
 )
 @pytest.mark.usefixtures("player_setup")
@@ -136,6 +150,42 @@ async def test_send_command_numeric(
         blocking=True,
     )
     state_1.send_numeric.assert_called_once_with(digit)
+
+
+@pytest.mark.parametrize(
+    ("command", "method"),
+    [
+        ("bass_up", "inc_bass_equalization"),
+        ("bass_down", "dec_bass_equalization"),
+        ("treble_up", "inc_treble_equalization"),
+        ("treble_down", "dec_treble_equalization"),
+        ("balance_right", "inc_balance"),
+        ("balance_left", "dec_balance"),
+        ("sub_trim_up", "inc_subwoofer_trim"),
+        ("sub_trim_down", "dec_subwoofer_trim"),
+        ("lipsync_up", "inc_lipsync_delay"),
+        ("lipsync_down", "dec_lipsync_delay"),
+        ("dolby_pliix_centre_width_up", "inc_dolby_pliix_centre_width"),
+        ("dolby_pliix_centre_width_down", "dec_dolby_pliix_centre_width"),
+        ("dolby_pliix_dimension_up", "inc_dolby_pliix_dimension"),
+        ("dolby_pliix_dimension_down", "dec_dolby_pliix_dimension"),
+    ],
+)
+@pytest.mark.usefixtures("player_setup")
+async def test_send_command_inc_dec(
+    hass: HomeAssistant,
+    state_1: State,
+    command: str,
+    method: str,
+) -> None:
+    """Inc/dec command names route to the matching library method."""
+    await hass.services.async_call(
+        REMOTE_DOMAIN,
+        SERVICE_SEND_COMMAND,
+        {ATTR_ENTITY_ID: REMOTE_ENTITY_ID, ATTR_COMMAND: [command]},
+        blocking=True,
+    )
+    getattr(state_1, method).assert_called_once_with()
 
 
 @pytest.mark.usefixtures("player_setup")

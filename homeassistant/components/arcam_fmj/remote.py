@@ -4,7 +4,14 @@ import asyncio
 from collections.abc import Awaitable, Callable, Iterable
 from typing import Any
 
-from arcam.fmj import RC5CodeColor, RC5CodeNavigation, RC5CodeToggle
+from arcam.fmj import (
+    HdmiOutput,
+    RC5CodeColor,
+    RC5CodeMenuAccess,
+    RC5CodeNavigation,
+    RC5CodePlayback,
+    RC5CodeToggle,
+)
 from arcam.fmj.state import State
 
 from homeassistant.components.remote import (
@@ -39,6 +46,18 @@ def _toggle(code: RC5CodeToggle) -> _CommandSender:
     return lambda state: state.send_toggle(code)
 
 
+def _playback(code: RC5CodePlayback) -> _CommandSender:
+    return lambda state: state.send_playback(code)
+
+
+def _menu_access(code: RC5CodeMenuAccess) -> _CommandSender:
+    return lambda state: state.send_menu_access(code)
+
+
+def _hdmi(output: HdmiOutput) -> _CommandSender:
+    return lambda state: state.set_hdmi_output(output)
+
+
 def _numeric(digit: int) -> _CommandSender:
     return lambda state: state.send_numeric(digit)
 
@@ -48,6 +67,25 @@ COMMANDS: dict[str, _CommandSender] = {
     **{str(digit): _numeric(digit) for digit in range(10)},
     **{code.name.lower(): _color(code) for code in RC5CodeColor},
     **{code.name.lower(): _toggle(code) for code in RC5CodeToggle},
+    **{code.name.lower(): _playback(code) for code in RC5CodePlayback},
+    **{code.name.lower(): _menu_access(code) for code in RC5CodeMenuAccess},
+    "hdmi_out_1": _hdmi(HdmiOutput.OUT_1),
+    "hdmi_out_2": _hdmi(HdmiOutput.OUT_2),
+    "hdmi_out_1_2": _hdmi(HdmiOutput.OUT_1_2),
+    "bass_up": lambda state: state.inc_bass_equalization(),
+    "bass_down": lambda state: state.dec_bass_equalization(),
+    "treble_up": lambda state: state.inc_treble_equalization(),
+    "treble_down": lambda state: state.dec_treble_equalization(),
+    "balance_right": lambda state: state.inc_balance(),
+    "balance_left": lambda state: state.dec_balance(),
+    "sub_trim_up": lambda state: state.inc_subwoofer_trim(),
+    "sub_trim_down": lambda state: state.dec_subwoofer_trim(),
+    "lipsync_up": lambda state: state.inc_lipsync_delay(),
+    "lipsync_down": lambda state: state.dec_lipsync_delay(),
+    "dolby_pliix_centre_width_up": lambda s: s.inc_dolby_pliix_centre_width(),
+    "dolby_pliix_centre_width_down": lambda s: s.dec_dolby_pliix_centre_width(),
+    "dolby_pliix_dimension_up": lambda s: s.inc_dolby_pliix_dimension(),
+    "dolby_pliix_dimension_down": lambda s: s.dec_dolby_pliix_dimension(),
 }
 
 
