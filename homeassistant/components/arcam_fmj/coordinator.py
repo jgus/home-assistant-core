@@ -51,7 +51,7 @@ class ArcamFmjCoordinator(DataUpdateCoordinator[None]):
         )
         self.client = client
         self.state = State(client, zone)
-        self.update_in_progress = False
+        self._refresh_in_progress = False
 
         device_name = config_entry.title
         unique_id = config_entry.unique_id or config_entry.entry_id
@@ -74,15 +74,28 @@ class ArcamFmjCoordinator(DataUpdateCoordinator[None]):
 
     async def _async_update_data(self) -> None:
         """Fetch data for manual refresh."""
+        async with self._suppress_packet_notifications():
+            try:
+                await self.state.update()
+            except ConnectionFailed as err:
+                raise UpdateFailed(
+                    f"Connection failed during update for zone {self.state.zn}"
+                ) from err
+
+    @asynccontextmanager
+    async def _suppress_packet_notifications(self) -> AsyncGenerator[None]:
+        """Pause per-packet listener notifications during an explicit refresh.
+
+        Without this, every response packet received while `state.update()` is
+        in flight would trigger a separate listener notification. The
+        coordinator already emits a single notification when the refresh
+        completes, so the per-packet ones would be redundant.
+        """
+        self._refresh_in_progress = True
         try:
-            self.update_in_progress = True
-            await self.state.update()
-        except ConnectionFailed as err:
-            raise UpdateFailed(
-                f"Connection failed during update for zone {self.state.zn}"
-            ) from err
+            yield
         finally:
-            self.update_in_progress = False
+            self._refresh_in_progress = False
 
     @callback
     def _async_notify_packet(self, packet: ResponsePacket | AmxDuetResponse) -> None:
@@ -90,7 +103,7 @@ class ArcamFmjCoordinator(DataUpdateCoordinator[None]):
         if (
             not isinstance(packet, ResponsePacket)
             or packet.zn != self.state.zn
-            or self.update_in_progress
+            or self._refresh_in_progress
         ):
             return
 
