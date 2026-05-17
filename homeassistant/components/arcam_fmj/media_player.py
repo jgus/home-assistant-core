@@ -443,7 +443,7 @@ class ArcamFmj(ArcamFmjEntity, MediaPlayerEntity):
 
     @property
     def extra_state_attributes(self) -> dict[str, Any] | None:
-        """Return extra attributes (BT codec, encoder, sample rate)."""
+        """Return extra attributes (BT codec, encoder, sample rate, FM genre)."""
         source = self._state.get_source()
         attrs: dict[str, Any] = {}
 
@@ -458,5 +458,8 @@ class ArcamFmj(ArcamFmjEntity, MediaPlayerEntity):
             bt_status, _ = self._state.get_bluetooth_status()
             if bt_status is not None and (codec := BLUETOOTH_CODEC.get(bt_status)):
                 attrs["bluetooth_codec"] = codec
+
+        if source == SourceCodes.FM and (genre := self._state.get_fm_genre()):
+            attrs["media_genre"] = genre
 
         return attrs or None

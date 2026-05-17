@@ -756,6 +756,32 @@ async def test_select_source_unsupported_raises(
 
 
 @pytest.mark.usefixtures("player_setup")
+async def test_fm_genre_in_attributes(
+    hass: HomeAssistant,
+    client: Mock,
+    state_1: State,
+) -> None:
+    """FM genre shows up as a media_genre attribute when the source is FM."""
+    state_1.get_source.return_value = SourceCodes.FM
+    state_1.get_fm_genre.return_value = "Classic Rock"
+    data = await update(hass, client, MOCK_ENTITY_ID)
+    assert data.attributes.get("media_genre") == "Classic Rock"
+
+
+@pytest.mark.usefixtures("player_setup")
+async def test_fm_genre_only_for_fm(
+    hass: HomeAssistant,
+    client: Mock,
+    state_1: State,
+) -> None:
+    """FM genre doesn't leak into other source's attributes."""
+    state_1.get_source.return_value = SourceCodes.BD
+    state_1.get_fm_genre.return_value = "Classic Rock"
+    data = await update(hass, client, MOCK_ENTITY_ID)
+    assert "media_genre" not in data.attributes
+
+
+@pytest.mark.usefixtures("player_setup")
 async def test_save_settings_default_pin(
     hass: HomeAssistant,
     state_1: State,

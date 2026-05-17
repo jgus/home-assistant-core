@@ -149,6 +149,7 @@ def _build_state_mock(client: Mock, zone: int, model: str | None) -> Mock:
     state.get_display_brightness.return_value = None
     state.get_direct_mode.return_value = None
     state.get_dolby_pliix_panorama.return_value = None
+    state.get_fm_genre.return_value = None
     state.to_dict.return_value = {
         "POWER": True,
         "VOLUME": 0.0,
