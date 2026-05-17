@@ -239,3 +239,96 @@ async def test_select_option_invalid(
             blocking=True,
         )
     state_1.set_dolby_audio.assert_not_called()
+
+
+@pytest.mark.usefixtures("player_setup")
+async def test_room_eq_uses_dirac_names(
+    hass: HomeAssistant,
+    client: Mock,
+    state_1: State,
+) -> None:
+    """When the device reports DIRAC profile names, they appear in the option list."""
+    state_1.get_room_eq_names.return_value = ["Living Room", "Kitchen", "Studio"]
+    state_1.get_room_equalization.return_value = RoomEqMode.EQ2
+    client.notify_data_updated()
+    await hass.async_block_till_done()
+
+    state = hass.states.get(ENTITY_ROOM_EQ)
+    assert state is not None
+    assert state.attributes["options"] == ["off", "Living Room", "Kitchen", "Studio"]
+    assert state.state == "Kitchen"
+
+
+@pytest.mark.usefixtures("player_setup")
+async def test_room_eq_partial_dirac_names_fall_back(
+    hass: HomeAssistant,
+    client: Mock,
+    state_1: State,
+) -> None:
+    """Empty or missing slot names fall back to the canonical eq1/eq2/eq3 keys."""
+    state_1.get_room_eq_names.return_value = ["Living Room", "", "Studio"]
+    client.notify_data_updated()
+    await hass.async_block_till_done()
+
+    state = hass.states.get(ENTITY_ROOM_EQ)
+    assert state is not None
+    assert state.attributes["options"] == ["off", "Living Room", "eq2", "Studio"]
+
+
+@pytest.mark.usefixtures("player_setup")
+async def test_room_eq_select_by_dirac_name(
+    hass: HomeAssistant,
+    client: Mock,
+    state_1: State,
+) -> None:
+    """Selecting by a DIRAC name resolves to the matching RoomEqMode slot."""
+    state_1.get_room_eq_names.return_value = ["Living Room", "Kitchen", "Studio"]
+    client.notify_data_updated()
+    await hass.async_block_till_done()
+
+    await hass.services.async_call(
+        SELECT_DOMAIN,
+        SERVICE_SELECT_OPTION,
+        {ATTR_ENTITY_ID: ENTITY_ROOM_EQ, ATTR_OPTION: "Kitchen"},
+        blocking=True,
+    )
+    state_1.set_room_equalization.assert_called_with(RoomEqMode.EQ2)
+
+
+@pytest.mark.usefixtures("player_setup")
+async def test_room_eq_select_off_with_dirac_names(
+    hass: HomeAssistant,
+    client: Mock,
+    state_1: State,
+) -> None:
+    """`off` remains selectable regardless of DIRAC names."""
+    state_1.get_room_eq_names.return_value = ["Living Room", "Kitchen", "Studio"]
+    client.notify_data_updated()
+    await hass.async_block_till_done()
+
+    await hass.services.async_call(
+        SELECT_DOMAIN,
+        SERVICE_SELECT_OPTION,
+        {ATTR_ENTITY_ID: ENTITY_ROOM_EQ, ATTR_OPTION: "off"},
+        blocking=True,
+    )
+    state_1.set_room_equalization.assert_called_with(RoomEqMode.OFF)
+
+
+@pytest.mark.usefixtures("player_setup")
+async def test_room_eq_falls_back_to_eq_keys_without_names(
+    hass: HomeAssistant,
+    state_1: State,
+) -> None:
+    """When the device hasn't sent ROOM_EQ_NAMES, options use eq1/eq2/eq3."""
+    state = hass.states.get(ENTITY_ROOM_EQ)
+    assert state is not None
+    assert state.attributes["options"] == ["off", "eq1", "eq2", "eq3"]
+
+    await hass.services.async_call(
+        SELECT_DOMAIN,
+        SERVICE_SELECT_OPTION,
+        {ATTR_ENTITY_ID: ENTITY_ROOM_EQ, ATTR_OPTION: "eq3"},
+        blocking=True,
+    )
+    state_1.set_room_equalization.assert_called_with(RoomEqMode.EQ3)

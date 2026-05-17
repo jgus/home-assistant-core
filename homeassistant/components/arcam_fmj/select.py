@@ -131,12 +131,15 @@ async def async_setup_entry(
     runtime_data = config_entry.runtime_data
     model = runtime_data.model
 
-    entities: list[ArcamFmjSelect] = []
+    entities: list[SelectEntity] = []
     for coordinator in runtime_data.coordinators.values():
         for description in SELECTS:
             if model not in description.api_versions:
                 continue
             if coordinator.state.zn not in description.zones:
+                continue
+            if description.key == "room_eq":
+                entities.append(ArcamFmjRoomEqSelect(coordinator, description))
                 continue
             members = _supported_members(description, model)
             if not members:
@@ -186,6 +189,67 @@ class ArcamFmjSelect(ArcamFmjDescriptionEntity, SelectEntity):
 
         try:
             await self.entity_description.set_fn(self.coordinator.state, member)
+        except ValueError as err:
+            raise unsupported_command_error(option) from err
+
+        self.async_write_ha_state()
+
+
+class ArcamFmjRoomEqSelect(ArcamFmjDescriptionEntity, SelectEntity):
+    """Room EQ select with live DIRAC profile names.
+
+    Profile slots 1-3 display under their device-configured names where
+    available, falling back to the translated `eq1`/`eq2`/`eq3` labels.
+    The names arrive via the listener pipeline like any other state, so
+    `options` is computed live rather than cached at construction.
+    """
+
+    entity_description: ArcamFmjSelectEntityDescription[RoomEqMode]
+    _SLOT_MODES = (RoomEqMode.EQ1, RoomEqMode.EQ2, RoomEqMode.EQ3)
+    _SLOT_FALLBACKS = ("eq1", "eq2", "eq3")
+
+    def _slot_labels(self) -> tuple[str, ...]:
+        names = self.coordinator.state.get_room_eq_names() or []
+        return tuple(
+            names[i] if i < len(names) and names[i] else fallback
+            for i, fallback in enumerate(self._SLOT_FALLBACKS)
+        )
+
+    @property
+    def options(self) -> list[str]:
+        """Return ["off", <slot 1 label>, <slot 2 label>, <slot 3 label>]."""
+        return ["off", *self._slot_labels()]
+
+    @property
+    def current_option(self) -> str | None:
+        """Map the current RoomEqMode back to a label, or None if not selectable."""
+        value = self.coordinator.state.get_room_equalization()
+        if value is None:
+            return None
+        if value == RoomEqMode.OFF:
+            return "off"
+        try:
+            return self._slot_labels()[self._SLOT_MODES.index(value)]
+        except ValueError:
+            return None
+
+    @convert_exception
+    async def async_select_option(self, option: str) -> None:
+        """Resolve the label (or "off") back to a RoomEqMode and send it."""
+        if option == "off":
+            mode = RoomEqMode.OFF
+        else:
+            try:
+                mode = self._SLOT_MODES[self._slot_labels().index(option)]
+            except ValueError as err:
+                raise ServiceValidationError(
+                    translation_domain=DOMAIN,
+                    translation_key="invalid_option",
+                    translation_placeholders={"option": option},
+                ) from err
+
+        try:
+            await self.coordinator.state.set_room_equalization(mode)
         except ValueError as err:
             raise unsupported_command_error(option) from err
 
