@@ -158,6 +158,78 @@
       "incoming_video_vertical_resolution": {
         "name": "Incoming video vertical resolution"
       }
+    },
+    "select": {
+      "compression": {
+        "name": "Dynamic range compression",
+        "state": {
+          "high": "High",
+          "medium": "Medium",
+          "off": "Off"
+        }
+      },
+      "decode_mode_2ch": {
+        "name": "2-channel decode mode",
+        "state": {
+          "auro_2d": "Auro 2D",
+          "auro_matic_3d": "Auro-Matic 3D",
+          "auro_native": "Auro Native",
+          "dolby_pl": "Dolby Pro Logic",
+          "dolby_plii_iix_game": "Dolby Pro Logic II/IIx Game",
+          "dolby_plii_iix_movie": "Dolby Pro Logic II/IIx Movie",
+          "dolby_plii_iix_music": "Dolby Pro Logic II/IIx Music",
+          "dolby_surround": "Dolby Surround",
+          "dolby_virtual_height": "Dolby Virtual Height",
+          "dts_neo_6_cinema": "DTS Neo:6 Cinema",
+          "dts_neo_6_music": "DTS Neo:6 Music",
+          "dts_neural_x": "DTS Neural:X",
+          "dts_virtual_x": "DTS Virtual:X",
+          "mch_stereo": "Multi-channel Stereo",
+          "stereo": "Stereo"
+        }
+      },
+      "decode_mode_mch": {
+        "name": "Multi-channel decode mode",
+        "state": {
+          "auro_2d": "Auro 2D",
+          "auro_matic_3d": "Auro-Matic 3D",
+          "auro_native": "Auro Native",
+          "dolby_d_ex_or_dts_es": "Dolby Digital EX or DTS-ES",
+          "dolby_plii_iix_movie": "Dolby Pro Logic II/IIx Movie",
+          "dolby_plii_iix_music": "Dolby Pro Logic II/IIx Music",
+          "dolby_surround": "Dolby Surround",
+          "dolby_virtual_height": "Dolby Virtual Height",
+          "dts_virtual_x": "DTS Virtual:X",
+          "multi_channel": "Multi-channel",
+          "stereo_downmix": "Stereo downmix"
+        }
+      },
+      "dolby_audio": {
+        "name": "Dolby Audio",
+        "state": {
+          "movie": "Movie",
+          "music": "Music",
+          "night": "Night",
+          "off": "Off"
+        }
+      },
+      "imax_enhanced": {
+        "name": "IMAX Enhanced",
+        "state": {
+          "auto": "Auto",
+          "off": "Off",
+          "on": "On"
+        }
+      },
+      "room_eq": {
+        "name": "Room EQ",
+        "state": {
+          "eq1": "EQ 1",
+          "eq2": "EQ 2",
+          "eq3": "EQ 3",
+          "off": "Off"
+        }
+      }
     }
   },
   "exceptions": {
@@ -166,6 +238,9 @@
     },
     "invalid_command": {
       "message": "Unknown remote command: {command}."
+    },
+    "invalid_option": {
+      "message": "Unknown option: {option}."
     },
     "invalid_preset": {
       "message": "Invalid preset media id: {media}."

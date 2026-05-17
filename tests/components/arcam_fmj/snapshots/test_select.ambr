@@ -1,0 +1,562 @@
+# serializer version: 1
+# name: test_setup[select.arcam_fmj_127_0_0_1_2_channel_decode_mode-entry]
+  EntityRegistryEntrySnapshot({
+    'aliases': list([
+      None,
+    ]),
+    'area_id': None,
+    'capabilities': dict({
+      'options': list([
+        'stereo',
+        'dolby_surround',
+        'dts_neo_6_cinema',
+        'dts_neo_6_music',
+        'mch_stereo',
+        'dts_neural_x',
+        'dts_virtual_x',
+      ]),
+    }),
+    'config_entry_id': <ANY>,
+    'config_subentry_id': <ANY>,
+    'device_class': None,
+    'device_id': <ANY>,
+    'disabled_by': None,
+    'domain': 'select',
+    'entity_category': <EntityCategory.CONFIG: 'config'>,
+    'entity_id': 'select.arcam_fmj_127_0_0_1_2_channel_decode_mode',
+    'has_entity_name': True,
+    'hidden_by': None,
+    'icon': None,
+    'id': <ANY>,
+    'labels': set({
+    }),
+    'name': None,
+    'object_id_base': '2-channel decode mode',
+    'options': dict({
+    }),
+    'original_device_class': None,
+    'original_icon': None,
+    'original_name': '2-channel decode mode',
+    'platform': 'arcam_fmj',
+    'previous_unique_id': None,
+    'suggested_object_id': None,
+    'supported_features': 0,
+    'translation_key': 'decode_mode_2ch',
+    'unique_id': '456789abcdef-1-decode_mode_2ch',
+    'unit_of_measurement': None,
+  })
+# ---
+# name: test_setup[select.arcam_fmj_127_0_0_1_2_channel_decode_mode-state]
+  StateSnapshot({
+    'attributes': ReadOnlyDict({
+      'friendly_name': 'Arcam FMJ (127.0.0.1) 2-channel decode mode',
+      'options': list([
+        'stereo',
+        'dolby_surround',
+        'dts_neo_6_cinema',
+        'dts_neo_6_music',
+        'mch_stereo',
+        'dts_neural_x',
+        'dts_virtual_x',
+      ]),
+    }),
+    'context': <ANY>,
+    'entity_id': 'select.arcam_fmj_127_0_0_1_2_channel_decode_mode',
+    'last_changed': <ANY>,
+    'last_reported': <ANY>,
+    'last_updated': <ANY>,
+    'state': 'unknown',
+  })
+# ---
+# name: test_setup[select.arcam_fmj_127_0_0_1_dolby_audio-entry]
+  EntityRegistryEntrySnapshot({
+    'aliases': list([
+      None,
+    ]),
+    'area_id': None,
+    'capabilities': dict({
+      'options': list([
+        'off',
+        'movie',
+      ]),
+    }),
+    'config_entry_id': <ANY>,
+    'config_subentry_id': <ANY>,
+    'device_class': None,
+    'device_id': <ANY>,
+    'disabled_by': None,
+    'domain': 'select',
+    'entity_category': <EntityCategory.CONFIG: 'config'>,
+    'entity_id': 'select.arcam_fmj_127_0_0_1_dolby_audio',
+    'has_entity_name': True,
+    'hidden_by': None,
+    'icon': None,
+    'id': <ANY>,
+    'labels': set({
+    }),
+    'name': None,
+    'object_id_base': 'Dolby Audio',
+    'options': dict({
+    }),
+    'original_device_class': None,
+    'original_icon': None,
+    'original_name': 'Dolby Audio',
+    'platform': 'arcam_fmj',
+    'previous_unique_id': None,
+    'suggested_object_id': None,
+    'supported_features': 0,
+    'translation_key': 'dolby_audio',
+    'unique_id': '456789abcdef-1-dolby_audio',
+    'unit_of_measurement': None,
+  })
+# ---
+# name: test_setup[select.arcam_fmj_127_0_0_1_dolby_audio-state]
+  StateSnapshot({
+    'attributes': ReadOnlyDict({
+      'friendly_name': 'Arcam FMJ (127.0.0.1) Dolby Audio',
+      'options': list([
+        'off',
+        'movie',
+      ]),
+    }),
+    'context': <ANY>,
+    'entity_id': 'select.arcam_fmj_127_0_0_1_dolby_audio',
+    'last_changed': <ANY>,
+    'last_reported': <ANY>,
+    'last_updated': <ANY>,
+    'state': 'unknown',
+  })
+# ---
+# name: test_setup[select.arcam_fmj_127_0_0_1_dynamic_range_compression-entry]
+  EntityRegistryEntrySnapshot({
+    'aliases': list([
+      None,
+    ]),
+    'area_id': None,
+    'capabilities': dict({
+      'options': list([
+        'off',
+        'medium',
+        'high',
+      ]),
+    }),
+    'config_entry_id': <ANY>,
+    'config_subentry_id': <ANY>,
+    'device_class': None,
+    'device_id': <ANY>,
+    'disabled_by': None,
+    'domain': 'select',
+    'entity_category': <EntityCategory.CONFIG: 'config'>,
+    'entity_id': 'select.arcam_fmj_127_0_0_1_dynamic_range_compression',
+    'has_entity_name': True,
+    'hidden_by': None,
+    'icon': None,
+    'id': <ANY>,
+    'labels': set({
+    }),
+    'name': None,
+    'object_id_base': 'Dynamic range compression',
+    'options': dict({
+    }),
+    'original_device_class': None,
+    'original_icon': None,
+    'original_name': 'Dynamic range compression',
+    'platform': 'arcam_fmj',
+    'previous_unique_id': None,
+    'suggested_object_id': None,
+    'supported_features': 0,
+    'translation_key': 'compression',
+    'unique_id': '456789abcdef-1-compression',
+    'unit_of_measurement': None,
+  })
+# ---
+# name: test_setup[select.arcam_fmj_127_0_0_1_dynamic_range_compression-state]
+  StateSnapshot({
+    'attributes': ReadOnlyDict({
+      'friendly_name': 'Arcam FMJ (127.0.0.1) Dynamic range compression',
+      'options': list([
+        'off',
+        'medium',
+        'high',
+      ]),
+    }),
+    'context': <ANY>,
+    'entity_id': 'select.arcam_fmj_127_0_0_1_dynamic_range_compression',
+    'last_changed': <ANY>,
+    'last_reported': <ANY>,
+    'last_updated': <ANY>,
+    'state': 'unknown',
+  })
+# ---
+# name: test_setup[select.arcam_fmj_127_0_0_1_imax_enhanced-entry]
+  EntityRegistryEntrySnapshot({
+    'aliases': list([
+      None,
+    ]),
+    'area_id': None,
+    'capabilities': dict({
+      'options': list([
+        'off',
+        'on',
+        'auto',
+      ]),
+    }),
+    'config_entry_id': <ANY>,
+    'config_subentry_id': <ANY>,
+    'device_class': None,
+    'device_id': <ANY>,
+    'disabled_by': None,
+    'domain': 'select',
+    'entity_category': <EntityCategory.CONFIG: 'config'>,
+    'entity_id': 'select.arcam_fmj_127_0_0_1_imax_enhanced',
+    'has_entity_name': True,
+    'hidden_by': None,
+    'icon': None,
+    'id': <ANY>,
+    'labels': set({
+    }),
+    'name': None,
+    'object_id_base': 'IMAX Enhanced',
+    'options': dict({
+    }),
+    'original_device_class': None,
+    'original_icon': None,
+    'original_name': 'IMAX Enhanced',
+    'platform': 'arcam_fmj',
+    'previous_unique_id': None,
+    'suggested_object_id': None,
+    'supported_features': 0,
+    'translation_key': 'imax_enhanced',
+    'unique_id': '456789abcdef-1-imax_enhanced',
+    'unit_of_measurement': None,
+  })
+# ---
+# name: test_setup[select.arcam_fmj_127_0_0_1_imax_enhanced-state]
+  StateSnapshot({
+    'attributes': ReadOnlyDict({
+      'friendly_name': 'Arcam FMJ (127.0.0.1) IMAX Enhanced',
+      'options': list([
+        'off',
+        'on',
+        'auto',
+      ]),
+    }),
+    'context': <ANY>,
+    'entity_id': 'select.arcam_fmj_127_0_0_1_imax_enhanced',
+    'last_changed': <ANY>,
+    'last_reported': <ANY>,
+    'last_updated': <ANY>,
+    'state': 'unknown',
+  })
+# ---
+# name: test_setup[select.arcam_fmj_127_0_0_1_multi_channel_decode_mode-entry]
+  EntityRegistryEntrySnapshot({
+    'aliases': list([
+      None,
+    ]),
+    'area_id': None,
+    'capabilities': dict({
+      'options': list([
+        'stereo_downmix',
+        'multi_channel',
+        'dolby_d_ex_or_dts_es',
+        'dolby_surround',
+        'dts_virtual_x',
+      ]),
+    }),
+    'config_entry_id': <ANY>,
+    'config_subentry_id': <ANY>,
+    'device_class': None,
+    'device_id': <ANY>,
+    'disabled_by': None,
+    'domain': 'select',
+    'entity_category': <EntityCategory.CONFIG: 'config'>,
+    'entity_id': 'select.arcam_fmj_127_0_0_1_multi_channel_decode_mode',
+    'has_entity_name': True,
+    'hidden_by': None,
+    'icon': None,
+    'id': <ANY>,
+    'labels': set({
+    }),
+    'name': None,
+    'object_id_base': 'Multi-channel decode mode',
+    'options': dict({
+    }),
+    'original_device_class': None,
+    'original_icon': None,
+    'original_name': 'Multi-channel decode mode',
+    'platform': 'arcam_fmj',
+    'previous_unique_id': None,
+    'suggested_object_id': None,
+    'supported_features': 0,
+    'translation_key': 'decode_mode_mch',
+    'unique_id': '456789abcdef-1-decode_mode_mch',
+    'unit_of_measurement': None,
+  })
+# ---
+# name: test_setup[select.arcam_fmj_127_0_0_1_multi_channel_decode_mode-state]
+  StateSnapshot({
+    'attributes': ReadOnlyDict({
+      'friendly_name': 'Arcam FMJ (127.0.0.1) Multi-channel decode mode',
+      'options': list([
+        'stereo_downmix',
+        'multi_channel',
+        'dolby_d_ex_or_dts_es',
+        'dolby_surround',
+        'dts_virtual_x',
+      ]),
+    }),
+    'context': <ANY>,
+    'entity_id': 'select.arcam_fmj_127_0_0_1_multi_channel_decode_mode',
+    'last_changed': <ANY>,
+    'last_reported': <ANY>,
+    'last_updated': <ANY>,
+    'state': 'unknown',
+  })
+# ---
+# name: test_setup[select.arcam_fmj_127_0_0_1_room_eq-entry]
+  EntityRegistryEntrySnapshot({
+    'aliases': list([
+      None,
+    ]),
+    'area_id': None,
+    'capabilities': dict({
+      'options': list([
+        'off',
+        'eq1',
+        'eq2',
+        'eq3',
+      ]),
+    }),
+    'config_entry_id': <ANY>,
+    'config_subentry_id': <ANY>,
+    'device_class': None,
+    'device_id': <ANY>,
+    'disabled_by': None,
+    'domain': 'select',
+    'entity_category': <EntityCategory.CONFIG: 'config'>,
+    'entity_id': 'select.arcam_fmj_127_0_0_1_room_eq',
+    'has_entity_name': True,
+    'hidden_by': None,
+    'icon': None,
+    'id': <ANY>,
+    'labels': set({
+    }),
+    'name': None,
+    'object_id_base': 'Room EQ',
+    'options': dict({
+    }),
+    'original_device_class': None,
+    'original_icon': None,
+    'original_name': 'Room EQ',
+    'platform': 'arcam_fmj',
+    'previous_unique_id': None,
+    'suggested_object_id': None,
+    'supported_features': 0,
+    'translation_key': 'room_eq',
+    'unique_id': '456789abcdef-1-room_eq',
+    'unit_of_measurement': None,
+  })
+# ---
+# name: test_setup[select.arcam_fmj_127_0_0_1_room_eq-state]
+  StateSnapshot({
+    'attributes': ReadOnlyDict({
+      'friendly_name': 'Arcam FMJ (127.0.0.1) Room EQ',
+      'options': list([
+        'off',
+        'eq1',
+        'eq2',
+        'eq3',
+      ]),
+    }),
+    'context': <ANY>,
+    'entity_id': 'select.arcam_fmj_127_0_0_1_room_eq',
+    'last_changed': <ANY>,
+    'last_reported': <ANY>,
+    'last_updated': <ANY>,
+    'state': 'unknown',
+  })
+# ---
+# name: test_setup[select.arcam_fmj_127_0_0_1_zone_2_dolby_audio-entry]
+  EntityRegistryEntrySnapshot({
+    'aliases': list([
+      None,
+    ]),
+    'area_id': None,
+    'capabilities': dict({
+      'options': list([
+        'off',
+        'movie',
+      ]),
+    }),
+    'config_entry_id': <ANY>,
+    'config_subentry_id': <ANY>,
+    'device_class': None,
+    'device_id': <ANY>,
+    'disabled_by': None,
+    'domain': 'select',
+    'entity_category': <EntityCategory.CONFIG: 'config'>,
+    'entity_id': 'select.arcam_fmj_127_0_0_1_zone_2_dolby_audio',
+    'has_entity_name': True,
+    'hidden_by': None,
+    'icon': None,
+    'id': <ANY>,
+    'labels': set({
+    }),
+    'name': None,
+    'object_id_base': 'Dolby Audio',
+    'options': dict({
+    }),
+    'original_device_class': None,
+    'original_icon': None,
+    'original_name': 'Dolby Audio',
+    'platform': 'arcam_fmj',
+    'previous_unique_id': None,
+    'suggested_object_id': None,
+    'supported_features': 0,
+    'translation_key': 'dolby_audio',
+    'unique_id': '456789abcdef-2-dolby_audio',
+    'unit_of_measurement': None,
+  })
+# ---
+# name: test_setup[select.arcam_fmj_127_0_0_1_zone_2_dolby_audio-state]
+  StateSnapshot({
+    'attributes': ReadOnlyDict({
+      'friendly_name': 'Arcam FMJ (127.0.0.1) Zone 2 Dolby Audio',
+      'options': list([
+        'off',
+        'movie',
+      ]),
+    }),
+    'context': <ANY>,
+    'entity_id': 'select.arcam_fmj_127_0_0_1_zone_2_dolby_audio',
+    'last_changed': <ANY>,
+    'last_reported': <ANY>,
+    'last_updated': <ANY>,
+    'state': 'unknown',
+  })
+# ---
+# name: test_setup[select.arcam_fmj_127_0_0_1_zone_2_dynamic_range_compression-entry]
+  EntityRegistryEntrySnapshot({
+    'aliases': list([
+      None,
+    ]),
+    'area_id': None,
+    'capabilities': dict({
+      'options': list([
+        'off',
+        'medium',
+        'high',
+      ]),
+    }),
+    'config_entry_id': <ANY>,
+    'config_subentry_id': <ANY>,
+    'device_class': None,
+    'device_id': <ANY>,
+    'disabled_by': None,
+    'domain': 'select',
+    'entity_category': <EntityCategory.CONFIG: 'config'>,
+    'entity_id': 'select.arcam_fmj_127_0_0_1_zone_2_dynamic_range_compression',
+    'has_entity_name': True,
+    'hidden_by': None,
+    'icon': None,
+    'id': <ANY>,
+    'labels': set({
+    }),
+    'name': None,
+    'object_id_base': 'Dynamic range compression',
+    'options': dict({
+    }),
+    'original_device_class': None,
+    'original_icon': None,
+    'original_name': 'Dynamic range compression',
+    'platform': 'arcam_fmj',
+    'previous_unique_id': None,
+    'suggested_object_id': None,
+    'supported_features': 0,
+    'translation_key': 'compression',
+    'unique_id': '456789abcdef-2-compression',
+    'unit_of_measurement': None,
+  })
+# ---
+# name: test_setup[select.arcam_fmj_127_0_0_1_zone_2_dynamic_range_compression-state]
+  StateSnapshot({
+    'attributes': ReadOnlyDict({
+      'friendly_name': 'Arcam FMJ (127.0.0.1) Zone 2 Dynamic range compression',
+      'options': list([
+        'off',
+        'medium',
+        'high',
+      ]),
+    }),
+    'context': <ANY>,
+    'entity_id': 'select.arcam_fmj_127_0_0_1_zone_2_dynamic_range_compression',
+    'last_changed': <ANY>,
+    'last_reported': <ANY>,
+    'last_updated': <ANY>,
+    'state': 'unknown',
+  })
+# ---
+# name: test_setup[select.arcam_fmj_127_0_0_1_zone_2_room_eq-entry]
+  EntityRegistryEntrySnapshot({
+    'aliases': list([
+      None,
+    ]),
+    'area_id': None,
+    'capabilities': dict({
+      'options': list([
+        'off',
+        'eq1',
+        'eq2',
+        'eq3',
+      ]),
+    }),
+    'config_entry_id': <ANY>,
+    'config_subentry_id': <ANY>,
+    'device_class': None,
+    'device_id': <ANY>,
+    'disabled_by': None,
+    'domain': 'select',
+    'entity_category': <EntityCategory.CONFIG: 'config'>,
+    'entity_id': 'select.arcam_fmj_127_0_0_1_zone_2_room_eq',
+    'has_entity_name': True,
+    'hidden_by': None,
+    'icon': None,
+    'id': <ANY>,
+    'labels': set({
+    }),
+    'name': None,
+    'object_id_base': 'Room EQ',
+    'options': dict({
+    }),
+    'original_device_class': None,
+    'original_icon': None,
+    'original_name': 'Room EQ',
+    'platform': 'arcam_fmj',
+    'previous_unique_id': None,
+    'suggested_object_id': None,
+    'supported_features': 0,
+    'translation_key': 'room_eq',
+    'unique_id': '456789abcdef-2-room_eq',
+    'unit_of_measurement': None,
+  })
+# ---
+# name: test_setup[select.arcam_fmj_127_0_0_1_zone_2_room_eq-state]
+  StateSnapshot({
+    'attributes': ReadOnlyDict({
+      'friendly_name': 'Arcam FMJ (127.0.0.1) Zone 2 Room EQ',
+      'options': list([
+        'off',
+        'eq1',
+        'eq2',
+        'eq3',
+      ]),
+    }),
+    'context': <ANY>,
+    'entity_id': 'select.arcam_fmj_127_0_0_1_zone_2_room_eq',
+    'last_changed': <ANY>,
+    'last_reported': <ANY>,
+    'last_updated': <ANY>,
+    'state': 'unknown',
+  })
+# ---

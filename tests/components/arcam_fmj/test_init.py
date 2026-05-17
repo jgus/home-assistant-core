@@ -90,6 +90,7 @@ async def test_disconnect_marks_all_entities_unavailable(
         "binary_sensor",
         "media_player",
         "remote",
+        "select",
         "sensor",
     }
     for entry in entries:
