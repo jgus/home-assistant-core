@@ -5,6 +5,7 @@ from typing import Any
 
 from arcam.fmj import (
     BluetoothAudioStatus,
+    CommandInvalidAtThisTime,
     NetworkPlaybackStatus,
     NowPlayingEncoder,
     RC5CodePlayback,
@@ -22,7 +23,7 @@ from homeassistant.components.media_player import (
 )
 from homeassistant.const import ATTR_ENTITY_ID
 from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import ServiceValidationError
+from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from .const import DOMAIN, EVENT_TURN_ON
@@ -63,6 +64,11 @@ def _bluetooth_state(status: BluetoothAudioStatus | None) -> MediaPlayerState | 
     if status in BLUETOOTH_CODEC:
         return MediaPlayerState.PLAYING
     return None
+
+
+def _parse_pin(pin: str) -> tuple[int, int, int, int]:
+    """Convert a 4-digit string into the library's PIN tuple."""
+    return (int(pin[0]), int(pin[1]), int(pin[2]), int(pin[3]))
 
 
 async def async_setup_entry(
@@ -236,6 +242,34 @@ class ArcamFmj(ArcamFmjEntity, MediaPlayerEntity):
             await self._state.send_playback(code)
         except ValueError as err:
             raise unsupported_command_error(code.name.lower()) from err
+
+    @convert_exception
+    async def async_save_settings(self, pin: str | None = None) -> None:
+        """Save the device's current settings to its secure backup slot."""
+        try:
+            if pin is None:
+                await self._state.save_settings()
+            else:
+                await self._state.save_settings(_parse_pin(pin))
+        except CommandInvalidAtThisTime as err:
+            raise HomeAssistantError(
+                translation_domain=DOMAIN,
+                translation_key="save_settings_failed",
+            ) from err
+
+    @convert_exception
+    async def async_restore_settings(self, pin: str | None = None) -> None:
+        """Restore the device's settings from its secure backup slot."""
+        try:
+            if pin is None:
+                await self._state.restore_settings()
+            else:
+                await self._state.restore_settings(_parse_pin(pin))
+        except CommandInvalidAtThisTime as err:
+            raise HomeAssistantError(
+                translation_domain=DOMAIN,
+                translation_key="restore_settings_failed",
+            ) from err
 
     async def async_browse_media(
         self,

@@ -7,12 +7,23 @@ import logging
 
 from arcam.fmj import APIVERSION_ZONE2_SERIES, AmxDuetRequest, ConnectionFailed
 from arcam.fmj.client import Client, ClientContext
+import voluptuous as vol
 
+from homeassistant.components.media_player import DOMAIN as MEDIA_PLAYER_DOMAIN
 from homeassistant.const import CONF_HOST, CONF_PORT, Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
+from homeassistant.helpers import config_validation as cv, service
+from homeassistant.helpers.typing import ConfigType, VolDictType
 
-from .const import DEFAULT_SCAN_INTERVAL, SETUP_TIMEOUT
+from .const import (
+    ATTR_PIN,
+    DEFAULT_SCAN_INTERVAL,
+    DOMAIN,
+    SERVICE_RESTORE_SETTINGS,
+    SERVICE_SAVE_SETTINGS,
+    SETUP_TIMEOUT,
+)
 from .coordinator import ArcamFmjConfigEntry, ArcamFmjCoordinator, ArcamFmjRuntimeData
 
 _LOGGER = logging.getLogger(__name__)
@@ -26,6 +37,29 @@ PLATFORMS = [
     Platform.SELECT,
     Platform.SENSOR,
 ]
+
+CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
+
+_PIN_SCHEMA: VolDictType = {
+    vol.Optional(ATTR_PIN): vol.All(cv.string, cv.matches_regex(r"^\d{4}$")),
+}
+
+
+async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
+    """Register Arcam FMJ services."""
+    for name, func in (
+        (SERVICE_SAVE_SETTINGS, "async_save_settings"),
+        (SERVICE_RESTORE_SETTINGS, "async_restore_settings"),
+    ):
+        service.async_register_platform_entity_service(
+            hass,
+            DOMAIN,
+            name,
+            entity_domain=MEDIA_PLAYER_DOMAIN,
+            schema=_PIN_SCHEMA,
+            func=func,
+        )
+    return True
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ArcamFmjConfigEntry) -> bool:

@@ -6,6 +6,7 @@ from unittest.mock import Mock, PropertyMock, patch
 
 from arcam.fmj import (
     BluetoothAudioStatus,
+    CommandInvalidAtThisTime,
     ConnectionFailed,
     DecodeMode2CH,
     DecodeModeMCH,
@@ -18,6 +19,7 @@ from arcam.fmj import (
 from arcam.fmj.state import State
 import pytest
 from syrupy.assertion import SnapshotAssertion
+import voluptuous as vol
 
 from homeassistant.components.arcam_fmj.media_player import ArcamFmj
 from homeassistant.components.media_player import (
@@ -751,3 +753,80 @@ async def test_select_source_unsupported_raises(
             blocking=True,
         )
     state_1.set_source.assert_not_called()
+
+
+@pytest.mark.usefixtures("player_setup")
+async def test_save_settings_default_pin(
+    hass: HomeAssistant,
+    state_1: State,
+) -> None:
+    """save_settings without a PIN uses the library default."""
+    await hass.services.async_call(
+        "arcam_fmj",
+        "save_settings",
+        {ATTR_ENTITY_ID: MOCK_ENTITY_ID},
+        blocking=True,
+    )
+    state_1.save_settings.assert_called_once_with()
+
+
+@pytest.mark.usefixtures("player_setup")
+async def test_save_settings_explicit_pin(
+    hass: HomeAssistant,
+    state_1: State,
+) -> None:
+    """save_settings passes a 4-digit PIN through as a tuple of ints."""
+    await hass.services.async_call(
+        "arcam_fmj",
+        "save_settings",
+        {ATTR_ENTITY_ID: MOCK_ENTITY_ID, "pin": "5678"},
+        blocking=True,
+    )
+    state_1.save_settings.assert_called_once_with((5, 6, 7, 8))
+
+
+@pytest.mark.usefixtures("player_setup")
+async def test_restore_settings_default_pin(
+    hass: HomeAssistant,
+    state_1: State,
+) -> None:
+    """restore_settings without a PIN uses the library default."""
+    await hass.services.async_call(
+        "arcam_fmj",
+        "restore_settings",
+        {ATTR_ENTITY_ID: MOCK_ENTITY_ID},
+        blocking=True,
+    )
+    state_1.restore_settings.assert_called_once_with()
+
+
+@pytest.mark.usefixtures("player_setup")
+async def test_restore_settings_no_backup(
+    hass: HomeAssistant,
+    state_1: State,
+) -> None:
+    """CommandInvalidAtThisTime surfaces as HomeAssistantError on restore."""
+    state_1.restore_settings.side_effect = CommandInvalidAtThisTime()
+    with pytest.raises(HomeAssistantError):
+        await hass.services.async_call(
+            "arcam_fmj",
+            "restore_settings",
+            {ATTR_ENTITY_ID: MOCK_ENTITY_ID},
+            blocking=True,
+        )
+
+
+@pytest.mark.usefixtures("player_setup")
+async def test_save_settings_invalid_pin(
+    hass: HomeAssistant,
+    state_1: State,
+) -> None:
+    """A non-4-digit PIN fails schema validation before reaching the library."""
+    with pytest.raises(vol.Invalid):
+        await hass.services.async_call(
+            "arcam_fmj",
+            "save_settings",
+            {ATTR_ENTITY_ID: MOCK_ENTITY_ID, "pin": "abc"},
+            blocking=True,
+        )
+    state_1.save_settings.assert_not_called()

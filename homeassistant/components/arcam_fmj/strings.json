@@ -268,6 +268,12 @@
     "invalid_preset": {
       "message": "Invalid preset media id: {media}."
     },
+    "restore_settings_failed": {
+      "message": "Restore settings failed: no saved backup is available, or the PIN was rejected"
+    },
+    "save_settings_failed": {
+      "message": "Save settings failed: the device rejected the PIN or is busy"
+    },
     "unsupported_command": {
       "message": "Command {command} is not supported on this Arcam FMJ model or zone."
     },
@@ -279,6 +285,28 @@
     },
     "unsupported_source": {
       "message": "Unsupported source: {source}."
+    }
+  },
+  "services": {
+    "restore_settings": {
+      "description": "Restores the receiver's settings from its secure backup slot.",
+      "fields": {
+        "pin": {
+          "description": "Installer PIN, 4 digits. Defaults to 1234 if omitted.",
+          "name": "[%key:component::arcam_fmj::services::save_settings::fields::pin::name%]"
+        }
+      },
+      "name": "Restore settings"
+    },
+    "save_settings": {
+      "description": "Saves the receiver's current settings to its secure backup slot.",
+      "fields": {
+        "pin": {
+          "description": "Installer PIN, 4 digits. Defaults to 1234 if omitted.",
+          "name": "PIN"
+        }
+      },
+      "name": "Save settings"
     }
   }
 }

@@ -1,0 +1,25 @@
+save_settings:
+  target:
+    entity:
+      domain: media_player
+      integration: arcam_fmj
+  fields:
+    pin:
+      required: false
+      example: "1234"
+      selector:
+        text:
+          type: password
+
+restore_settings:
+  target:
+    entity:
+      domain: media_player
+      integration: arcam_fmj
+  fields:
+    pin:
+      required: false
+      example: "1234"
+      selector:
+        text:
+          type: password

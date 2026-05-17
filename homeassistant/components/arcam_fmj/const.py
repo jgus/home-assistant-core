@@ -12,3 +12,7 @@ DEFAULT_SCAN_INTERVAL = 5
 # request/response, with internal retries) before retrying via
 # ConfigEntryNotReady.
 SETUP_TIMEOUT = 10
+
+SERVICE_SAVE_SETTINGS = "save_settings"
+SERVICE_RESTORE_SETTINGS = "restore_settings"
+ATTR_PIN = "pin"
