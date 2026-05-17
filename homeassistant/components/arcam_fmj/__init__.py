@@ -63,6 +63,7 @@ async def _run_client(
 ) -> None:
     client = runtime_data.client
     coordinators = runtime_data.coordinators
+    connected = True
 
     while True:
         try:
@@ -71,7 +72,9 @@ async def _run_client(
                     await client.start()
                 stack.push_async_callback(client.stop)
 
-                _LOGGER.debug("Client connected %s", client.host)
+                if not connected:
+                    _LOGGER.info("Reconnected to Arcam FMJ at %s", client.host)
+                    connected = True
 
                 try:
                     for coordinator in coordinators.values():
@@ -81,11 +84,24 @@ async def _run_client(
 
                     await client.process()
                 finally:
-                    _LOGGER.debug("Client disconnected %s", client.host)
+                    if connected:
+                        _LOGGER.warning(
+                            "Lost connection to Arcam FMJ at %s", client.host
+                        )
+                        connected = False
 
         except ConnectionFailed:
-            pass
+            if connected:
+                _LOGGER.warning(
+                    "Connection to Arcam FMJ at %s failed", client.host
+                )
+                connected = False
         except TimeoutError:
+            if connected:
+                _LOGGER.warning(
+                    "Connection to Arcam FMJ at %s timed out", client.host
+                )
+                connected = False
             continue
         except Exception:
             _LOGGER.exception("Unexpected exception, aborting arcam client")
