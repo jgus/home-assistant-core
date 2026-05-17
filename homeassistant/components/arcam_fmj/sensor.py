@@ -18,7 +18,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from .coordinator import ArcamFmjConfigEntry
-from .entity import ArcamFmjEntity
+from .entity import ArcamFmjDescriptionEntity
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -164,7 +164,7 @@ async def async_setup_entry(
     async_add_entities(entities)
 
 
-class ArcamFmjSensorEntity(ArcamFmjEntity, SensorEntity):
+class ArcamFmjSensorEntity(ArcamFmjDescriptionEntity, SensorEntity):
     """Representation of an Arcam FMJ sensor."""
 
     entity_description: ArcamFmjSensorEntityDescription

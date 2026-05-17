@@ -14,7 +14,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from .coordinator import ArcamFmjConfigEntry
-from .entity import ArcamFmjEntity
+from .entity import ArcamFmjDescriptionEntity
 
 # Read-only, coordinator-driven entities; no per-entity I/O to bound.
 PARALLEL_UPDATES = 0
@@ -58,7 +58,7 @@ async def async_setup_entry(
     async_add_entities(entities)
 
 
-class ArcamFmjBinarySensorEntity(ArcamFmjEntity, BinarySensorEntity):
+class ArcamFmjBinarySensorEntity(ArcamFmjDescriptionEntity, BinarySensorEntity):
     """Representation of an Arcam FMJ binary sensor."""
 
     entity_description: ArcamFmjBinarySensorEntityDescription

@@ -36,21 +36,28 @@ class ArcamFmjEntity(CoordinatorEntity[ArcamFmjCoordinator]):
 
     _attr_has_entity_name = True
 
-    def __init__(
-        self,
-        coordinator: ArcamFmjCoordinator,
-        description: EntityDescription | None = None,
-    ) -> None:
+    def __init__(self, coordinator: ArcamFmjCoordinator) -> None:
         """Initialize the entity."""
         super().__init__(coordinator)
         self._attr_device_info = coordinator.device_info
         self._attr_entity_registry_enabled_default = coordinator.state.zn == 1
         self._attr_unique_id = coordinator.zone_unique_id
-        if description is not None:
-            self._attr_unique_id = f"{self._attr_unique_id}-{description.key}"
-            self.entity_description = description
 
     @property
     def available(self) -> bool:
         """Return if entity is available."""
         return super().available and self.coordinator.client.connected
+
+
+class ArcamFmjDescriptionEntity(ArcamFmjEntity):
+    """Arcam FMJ entity backed by an EntityDescription."""
+
+    def __init__(
+        self,
+        coordinator: ArcamFmjCoordinator,
+        description: EntityDescription,
+    ) -> None:
+        """Initialize the entity and derive its unique id from the description key."""
+        super().__init__(coordinator)
+        self.entity_description = description
+        self._attr_unique_id = f"{coordinator.zone_unique_id}-{description.key}"
