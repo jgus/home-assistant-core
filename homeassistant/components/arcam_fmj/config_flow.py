@@ -30,14 +30,20 @@ class ArcamFmjFlowHandler(ConfigFlow, domain=DOMAIN):
         await self.async_set_unique_id(uuid)
         self._abort_if_unique_id_configured({CONF_HOST: host, CONF_PORT: port})
 
-    async def _async_check_and_create(self, host: str, port: int) -> ConfigFlowResult:
+    async def _async_test_connection(self, host: str, port: int) -> bool:
+        """Verify that the receiver accepts a TCP connection."""
         client = Client(host, port)
         try:
             await client.start()
         except ConnectionFailed:
-            return self.async_abort(reason="cannot_connect")
+            return False
         finally:
             await client.stop()
+        return True
+
+    async def _async_check_and_create(self, host: str, port: int) -> ConfigFlowResult:
+        if not await self._async_test_connection(host, port):
+            return self.async_abort(reason="cannot_connect")
 
         return self.async_create_entry(
             title=f"{DEFAULT_NAME} ({host})",
@@ -97,3 +103,39 @@ class ArcamFmjFlowHandler(ConfigFlow, domain=DOMAIN):
         self.host = host
         self.port = DEFAULT_PORT
         return await self.async_step_confirm()
+
+    async def async_step_reconfigure(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Handle a reconfiguration of an existing entry."""
+        entry = self._get_reconfigure_entry()
+        errors: dict[str, str] = {}
+
+        if user_input is not None:
+            host = user_input[CONF_HOST]
+            port = user_input[CONF_PORT]
+
+            if entry.unique_id is not None:
+                uuid = await get_uniqueid_from_host(
+                    async_get_clientsession(self.hass), host
+                )
+                if uuid is not None:
+                    await self.async_set_unique_id(uuid)
+                    self._abort_if_unique_id_mismatch()
+
+            if await self._async_test_connection(host, port):
+                return self.async_update_reload_and_abort(
+                    entry,
+                    data_updates={CONF_HOST: host, CONF_PORT: port},
+                )
+            errors["base"] = "cannot_connect"
+
+        fields = {
+            vol.Required(CONF_HOST, default=entry.data[CONF_HOST]): str,
+            vol.Required(CONF_PORT, default=entry.data[CONF_PORT]): int,
+        }
+        return self.async_show_form(
+            step_id="reconfigure",
+            data_schema=vol.Schema(fields),
+            errors=errors,
+        )

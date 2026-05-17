@@ -232,3 +232,114 @@ async def test_user_wrong(
     assert result["type"] is FlowResultType.CREATE_ENTRY
     assert result["title"] == f"Arcam FMJ ({MOCK_HOST})"
     assert result["result"].unique_id is None
+
+
+NEW_HOST = "10.10.10.10"
+NEW_PORT = 50001
+NEW_UPNP_LOCATION = f"http://{NEW_HOST}:8080/dd.xml"
+
+
+async def test_reconfigure(
+    hass: HomeAssistant,
+    mock_config_entry: MockConfigEntry,
+    aioclient_mock: AiohttpClientMocker,
+) -> None:
+    """Test reconfiguring host and port for an existing entry."""
+    aioclient_mock.get(NEW_UPNP_LOCATION, text=MOCK_UPNP_DEVICE)
+
+    result = await mock_config_entry.start_reconfigure_flow(hass)
+    assert result["type"] is FlowResultType.FORM
+    assert result["step_id"] == "reconfigure"
+
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"],
+        {CONF_HOST: NEW_HOST, CONF_PORT: NEW_PORT},
+    )
+    await hass.async_block_till_done()
+
+    assert result["type"] is FlowResultType.ABORT
+    assert result["reason"] == "reconfigure_successful"
+    assert mock_config_entry.data == {CONF_HOST: NEW_HOST, CONF_PORT: NEW_PORT}
+
+
+async def test_reconfigure_cannot_connect(
+    hass: HomeAssistant,
+    mock_config_entry: MockConfigEntry,
+    aioclient_mock: AiohttpClientMocker,
+    dummy_client: MagicMock,
+) -> None:
+    """Test the reconfigure flow shows a form error when connection fails."""
+    aioclient_mock.get(NEW_UPNP_LOCATION, text=MOCK_UPNP_DEVICE)
+    dummy_client.start.side_effect = AsyncMock(side_effect=ConnectionFailed)
+
+    result = await mock_config_entry.start_reconfigure_flow(hass)
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"],
+        {CONF_HOST: NEW_HOST, CONF_PORT: NEW_PORT},
+    )
+
+    assert result["type"] is FlowResultType.FORM
+    assert result["step_id"] == "reconfigure"
+    assert result["errors"] == {"base": "cannot_connect"}
+    assert mock_config_entry.data == MOCK_CONFIG_ENTRY
+
+    dummy_client.start.side_effect = AsyncMock(return_value=None)
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"],
+        {CONF_HOST: NEW_HOST, CONF_PORT: NEW_PORT},
+    )
+    await hass.async_block_till_done()
+
+    assert result["type"] is FlowResultType.ABORT
+    assert result["reason"] == "reconfigure_successful"
+    assert mock_config_entry.data == {CONF_HOST: NEW_HOST, CONF_PORT: NEW_PORT}
+
+
+async def test_reconfigure_unique_id_mismatch(
+    hass: HomeAssistant,
+    mock_config_entry: MockConfigEntry,
+    aioclient_mock: AiohttpClientMocker,
+) -> None:
+    """Test the reconfigure flow aborts when reconfiguring a different device."""
+    other_udn = "uuid:01234567-89ab-cdef-0123-fedcba987654"
+    other_device = f"""
+<root xmlns="urn:schemas-upnp-org:device-1-0">
+  <device>
+    <UDN>{other_udn}</UDN>
+  </device>
+</root>
+"""
+    aioclient_mock.get(NEW_UPNP_LOCATION, text=other_device)
+
+    result = await mock_config_entry.start_reconfigure_flow(hass)
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"],
+        {CONF_HOST: NEW_HOST, CONF_PORT: NEW_PORT},
+    )
+
+    assert result["type"] is FlowResultType.ABORT
+    assert result["reason"] == "unique_id_mismatch"
+    assert mock_config_entry.data == MOCK_CONFIG_ENTRY
+
+
+async def test_reconfigure_no_unique_id_skips_check(
+    hass: HomeAssistant,
+    aioclient_mock: AiohttpClientMocker,
+) -> None:
+    """Test the reconfigure flow skips uniqueness checks when the entry has no unique_id."""
+    entry = MockConfigEntry(
+        domain=DOMAIN, data=MOCK_CONFIG_ENTRY, title=MOCK_NAME, unique_id=None
+    )
+    entry.add_to_hass(hass)
+
+    result = await entry.start_reconfigure_flow(hass)
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"],
+        {CONF_HOST: NEW_HOST, CONF_PORT: NEW_PORT},
+    )
+    await hass.async_block_till_done()
+
+    assert result["type"] is FlowResultType.ABORT
+    assert result["reason"] == "reconfigure_successful"
+    assert entry.data == {CONF_HOST: NEW_HOST, CONF_PORT: NEW_PORT}
+    assert aioclient_mock.call_count == 0
