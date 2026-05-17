@@ -86,3 +86,40 @@ async def test_binary_sensor_not_interlaced(
     )
     assert state is not None
     assert state.state == STATE_OFF
+
+
+@pytest.mark.parametrize(
+    ("value", "expected"),
+    [(True, STATE_ON), (False, STATE_OFF), (None, STATE_UNKNOWN)],
+)
+@pytest.mark.usefixtures("player_setup")
+async def test_headphones(
+    hass: HomeAssistant,
+    state_1: State,
+    client: Mock,
+    value: bool | None,
+    expected: str,
+) -> None:
+    """Headphones binary sensor reflects get_headphones()."""
+    state_1.get_headphones.return_value = value
+    client.notify_data_updated()
+    await hass.async_block_till_done()
+
+    state = hass.states.get("binary_sensor.arcam_fmj_127_0_0_1_headphones")
+    assert state is not None
+    assert state.state == expected
+
+
+@pytest.mark.parametrize("model", ["PA720"], indirect=True)
+@pytest.mark.usefixtures("player_setup")
+async def test_headphones_not_supported_on_pa_series(
+    hass: HomeAssistant,
+    entity_registry: er.EntityRegistry,
+    mock_config_entry: MockConfigEntry,
+) -> None:
+    """PA-series power amps aren't in AVR_AND_SA — no headphones entity."""
+    entries = er.async_entries_for_config_entry(
+        entity_registry, mock_config_entry.entry_id
+    )
+    keys = {entry.unique_id.rsplit("-", 1)[-1] for entry in entries}
+    assert "headphones" not in keys

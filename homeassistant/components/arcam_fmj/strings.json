@@ -46,6 +46,9 @@
   },
   "entity": {
     "binary_sensor": {
+      "headphones": {
+        "name": "Headphones"
+      },
       "incoming_video_interlaced": {
         "name": "Incoming video interlaced"
       }
