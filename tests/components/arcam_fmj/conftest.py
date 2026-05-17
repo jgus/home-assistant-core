@@ -5,7 +5,7 @@ from collections.abc import AsyncGenerator, Generator
 from contextlib import contextmanager
 from unittest.mock import AsyncMock, Mock, patch
 
-from arcam.fmj import AmxDuetResponse
+from arcam.fmj import AmxDuetResponse, SourceCodes
 from arcam.fmj.client import Client, ResponsePacket
 from arcam.fmj.state import State
 import pytest
@@ -107,13 +107,26 @@ def _build_state_mock(client: Mock, zone: int, model: str | None) -> Mock:
     state.get_power.return_value = True
     state.get_volume.return_value = 0.0
     state.get_source.return_value = None
-    state.get_source_list.return_value = []
+    state.get_source_list.return_value = [
+        SourceCodes.CD,
+        SourceCodes.BD,
+        SourceCodes.AV,
+        SourceCodes.PVR,
+        SourceCodes.FM,
+        SourceCodes.DAB,
+        SourceCodes.NET,
+        SourceCodes.USB,
+        SourceCodes.BT,
+    ]
     state.get_incoming_audio_format.return_value = (None, None)
     state.get_incoming_video_parameters.return_value = None
     state.get_incoming_audio_sample_rate.return_value = 0
     state.get_mute.return_value = None
     state.get_decode_modes.return_value = []
     state.get_decode_mode.return_value = None
+    state.get_network_playback_status.return_value = None
+    state.get_now_playing.return_value = None
+    state.get_bluetooth_status.return_value = (None, None)
     state.to_dict.return_value = {
         "POWER": True,
         "VOLUME": 0.0,

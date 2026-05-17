@@ -3,7 +3,13 @@
 import logging
 from typing import Any
 
-from arcam.fmj import SourceCodes
+from arcam.fmj import (
+    BluetoothAudioStatus,
+    NetworkPlaybackStatus,
+    NowPlayingEncoder,
+    RC5CodePlayback,
+    SourceCodes,
+)
 
 from homeassistant.components.media_player import (
     BrowseError,
@@ -21,13 +27,42 @@ from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from .const import DOMAIN, EVENT_TURN_ON
 from .coordinator import ArcamFmjConfigEntry, ArcamFmjCoordinator
-from .entity import ArcamFmjEntity, convert_exception
+from .entity import ArcamFmjEntity, convert_exception, unsupported_command_error
 
 _LOGGER = logging.getLogger(__name__)
 
 # arcam-fmj serializes commands on a single TCP writer at the library
 # layer; serialize at HA's layer to match the device's contract.
 PARALLEL_UPDATES = 1
+
+TUNER_SOURCES = {SourceCodes.DAB, SourceCodes.FM}
+NETWORK_SOURCES = {SourceCodes.NET, SourceCodes.USB, SourceCodes.NET_USB}
+BLUETOOTH_SOURCES = {SourceCodes.BT}
+PLAYBACK_SOURCES = NETWORK_SOURCES | BLUETOOTH_SOURCES
+AUDIO_SOURCES = TUNER_SOURCES | PLAYBACK_SOURCES
+
+NETWORK_PLAYBACK_STATE: dict[NetworkPlaybackStatus, MediaPlayerState] = {
+    NetworkPlaybackStatus.STOPPED: MediaPlayerState.IDLE,
+    NetworkPlaybackStatus.TRANSITIONING: MediaPlayerState.BUFFERING,
+    NetworkPlaybackStatus.PLAYING: MediaPlayerState.PLAYING,
+    NetworkPlaybackStatus.PAUSED: MediaPlayerState.PAUSED,
+}
+
+BLUETOOTH_CODEC: dict[BluetoothAudioStatus, str] = {
+    BluetoothAudioStatus.PLAYING_SBC: "SBC",
+    BluetoothAudioStatus.PLAYING_AAC: "AAC",
+    BluetoothAudioStatus.PLAYING_APTX: "aptX",
+    BluetoothAudioStatus.PLAYING_APTX_HD: "aptX HD",
+}
+
+
+def _bluetooth_state(status: BluetoothAudioStatus | None) -> MediaPlayerState | None:
+    """Map a Bluetooth status to a media player state, if meaningful."""
+    if status == BluetoothAudioStatus.PAUSED:
+        return MediaPlayerState.PAUSED
+    if status in BLUETOOTH_CODEC:
+        return MediaPlayerState.PLAYING
+    return None
 
 
 async def async_setup_entry(
@@ -60,7 +95,14 @@ class ArcamFmj(ArcamFmjEntity, MediaPlayerEntity):
             | MediaPlayerEntityFeature.TURN_ON
         )
         if self._state.zn == 1:
-            self._attr_supported_features |= MediaPlayerEntityFeature.SELECT_SOUND_MODE
+            self._attr_supported_features |= (
+                MediaPlayerEntityFeature.SELECT_SOUND_MODE
+                | MediaPlayerEntityFeature.PLAY
+                | MediaPlayerEntityFeature.PAUSE
+                | MediaPlayerEntityFeature.STOP
+                | MediaPlayerEntityFeature.NEXT_TRACK
+                | MediaPlayerEntityFeature.PREVIOUS_TRACK
+            )
 
     @property
     def state(self) -> MediaPlayerState | None:
@@ -73,7 +115,21 @@ class ArcamFmj(ArcamFmjEntity, MediaPlayerEntity):
         power = self._state.get_power()
         if power is None:
             return None
-        return MediaPlayerState.ON if power else MediaPlayerState.OFF
+        if not power:
+            return MediaPlayerState.OFF
+
+        source = self._state.get_source()
+        if (
+            source in NETWORK_SOURCES
+            and (status := self._state.get_network_playback_status()) is not None
+        ):
+            return NETWORK_PLAYBACK_STATE.get(status, MediaPlayerState.ON)
+        if source in BLUETOOTH_SOURCES:
+            bt_status, _ = self._state.get_bluetooth_status()
+            if (bt_state := _bluetooth_state(bt_status)) is not None:
+                return bt_state
+
+        return MediaPlayerState.ON
 
     @convert_exception
     async def async_mute_volume(self, mute: bool) -> None:
@@ -86,12 +142,18 @@ class ArcamFmj(ArcamFmjEntity, MediaPlayerEntity):
         """Select a specific source."""
         try:
             value = SourceCodes[source]
-        except KeyError as exception:
+        except KeyError as err:
             raise ServiceValidationError(
                 translation_domain=DOMAIN,
                 translation_key="unsupported_source",
                 translation_placeholders={"source": source},
-            ) from exception
+            ) from err
+        if value not in self._state.get_source_list():
+            raise ServiceValidationError(
+                translation_domain=DOMAIN,
+                translation_key="unsupported_source",
+                translation_placeholders={"source": source},
+            )
 
         await self._state.set_source(value)
         self.async_write_ha_state()
@@ -142,6 +204,38 @@ class ArcamFmj(ArcamFmjEntity, MediaPlayerEntity):
     async def async_turn_off(self) -> None:
         """Turn the media player off."""
         await self._state.set_power(False)
+
+    @convert_exception
+    async def async_media_play(self) -> None:
+        """Send play command."""
+        await self._send_playback(RC5CodePlayback.PLAY)
+
+    @convert_exception
+    async def async_media_pause(self) -> None:
+        """Send pause command."""
+        await self._send_playback(RC5CodePlayback.PAUSE)
+
+    @convert_exception
+    async def async_media_stop(self) -> None:
+        """Send stop command."""
+        await self._send_playback(RC5CodePlayback.STOP)
+
+    @convert_exception
+    async def async_media_next_track(self) -> None:
+        """Send skip-forward command."""
+        await self._send_playback(RC5CodePlayback.SKIP_FORWARD)
+
+    @convert_exception
+    async def async_media_previous_track(self) -> None:
+        """Send skip-back command."""
+        await self._send_playback(RC5CodePlayback.SKIP_BACK)
+
+    async def _send_playback(self, code: RC5CodePlayback) -> None:
+        """Forward a playback RC5 code, translating model-support errors."""
+        try:
+            await self._state.send_playback(code)
+        except ValueError as err:
+            raise unsupported_command_error(code.name.lower()) from err
 
     async def async_browse_media(
         self,
@@ -211,7 +305,7 @@ class ArcamFmj(ArcamFmjEntity, MediaPlayerEntity):
     @property
     def source_list(self) -> list[str]:
         """List of available input sources."""
-        return [x.name for x in self._state.get_source_list()]
+        return [src.name for src in self._state.get_source_list()]
 
     @property
     def sound_mode(self) -> str | None:
@@ -244,47 +338,38 @@ class ArcamFmj(ArcamFmjEntity, MediaPlayerEntity):
     @property
     def media_content_type(self) -> MediaType | None:
         """Content type of current playing media."""
-        source = self._state.get_source()
-        if source in (SourceCodes.DAB, SourceCodes.FM):
-            value = MediaType.MUSIC
-        else:
-            value = None
-        return value
+        if self._state.get_source() in AUDIO_SOURCES:
+            return MediaType.MUSIC
+        return None
 
     @property
     def media_content_id(self) -> str | None:
         """Content type of current playing media."""
-        source = self._state.get_source()
-        if source in (SourceCodes.DAB, SourceCodes.FM):
-            if preset := self._state.get_tuner_preset():
-                value = f"preset:{preset}"
-            else:
-                value = None
-        else:
-            value = None
-
-        return value
+        if self._state.get_source() not in TUNER_SOURCES:
+            return None
+        if preset := self._state.get_tuner_preset():
+            return f"preset:{preset}"
+        return None
 
     @property
     def media_channel(self) -> str | None:
         """Channel currently playing."""
         source = self._state.get_source()
         if source == SourceCodes.DAB:
-            value = self._state.get_dab_station()
-        elif source == SourceCodes.FM:
-            value = self._state.get_rds_information()
-        else:
-            value = None
-        return value
+            return self._state.get_dab_station()
+        if source == SourceCodes.FM:
+            return self._state.get_rds_information()
+        return None
 
     @property
     def media_artist(self) -> str | None:
         """Artist of current playing media, music track only."""
-        if self._state.get_source() == SourceCodes.DAB:
-            value = self._state.get_dls_pdt()
-        else:
-            value = None
-        return value
+        source = self._state.get_source()
+        if source == SourceCodes.DAB:
+            return self._state.get_dls_pdt()
+        if source in PLAYBACK_SOURCES and (np := self._state.get_now_playing()):
+            return np.artist
+        return None
 
     @property
     def media_title(self) -> str | None:
@@ -292,8 +377,52 @@ class ArcamFmj(ArcamFmjEntity, MediaPlayerEntity):
         if (source := self._state.get_source()) is None:
             return None
 
+        if source in PLAYBACK_SOURCES:
+            if (np := self._state.get_now_playing()) and np.track:
+                return np.track
+            if source in BLUETOOTH_SOURCES:
+                _, bt_track = self._state.get_bluetooth_status()
+                if bt_track:
+                    return bt_track
+
         if channel := self.media_channel:
-            value = f"{source.name} - {channel}"
-        else:
-            value = source.name
-        return value
+            return f"{source.name} - {channel}"
+        return self.source
+
+    @property
+    def media_album_name(self) -> str | None:
+        """Album of current playing media."""
+        if self._state.get_source() in PLAYBACK_SOURCES and (
+            np := self._state.get_now_playing()
+        ):
+            return np.album
+        return None
+
+    @property
+    def app_name(self) -> str | None:
+        """Name of the network/streaming app supplying the current media."""
+        if self._state.get_source() in NETWORK_SOURCES and (
+            np := self._state.get_now_playing()
+        ):
+            return np.application
+        return None
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any] | None:
+        """Return extra attributes (BT codec, encoder, sample rate)."""
+        source = self._state.get_source()
+        attrs: dict[str, Any] = {}
+
+        if source in PLAYBACK_SOURCES and (np := self._state.get_now_playing()):
+            if np.sample_rate:
+                attrs["media_sample_rate"] = np.sample_rate
+            encoder = np.encoder
+            if encoder is not None and encoder != NowPlayingEncoder.UNKNOWN:
+                attrs["media_encoder"] = encoder.name
+
+        if source in BLUETOOTH_SOURCES:
+            bt_status, _ = self._state.get_bluetooth_status()
+            if bt_status is not None and (codec := BLUETOOTH_CODEC.get(bt_status)):
+                attrs["bluetooth_codec"] = codec
+
+        return attrs or None

@@ -4,7 +4,17 @@ from collections.abc import Generator
 from math import isclose
 from unittest.mock import Mock, PropertyMock, patch
 
-from arcam.fmj import ConnectionFailed, DecodeMode2CH, DecodeModeMCH, SourceCodes
+from arcam.fmj import (
+    BluetoothAudioStatus,
+    ConnectionFailed,
+    DecodeMode2CH,
+    DecodeModeMCH,
+    NetworkPlaybackStatus,
+    NowPlayingEncoder,
+    NowPlayingInfo,
+    RC5CodePlayback,
+    SourceCodes,
+)
 from arcam.fmj.state import State
 import pytest
 from syrupy.assertion import SnapshotAssertion
@@ -12,6 +22,7 @@ from syrupy.assertion import SnapshotAssertion
 from homeassistant.components.arcam_fmj.media_player import ArcamFmj
 from homeassistant.components.media_player import (
     ATTR_INPUT_SOURCE,
+    ATTR_MEDIA_ALBUM_NAME,
     ATTR_MEDIA_ARTIST,
     ATTR_MEDIA_CHANNEL,
     ATTR_MEDIA_CONTENT_ID,
@@ -21,6 +32,11 @@ from homeassistant.components.media_player import (
     ATTR_SOUND_MODE,
     ATTR_SOUND_MODE_LIST,
     DOMAIN as MEDIA_PLAYER_DOMAIN,
+    SERVICE_MEDIA_NEXT_TRACK,
+    SERVICE_MEDIA_PAUSE,
+    SERVICE_MEDIA_PLAY,
+    SERVICE_MEDIA_PREVIOUS_TRACK,
+    SERVICE_MEDIA_STOP,
     SERVICE_PLAY_MEDIA,
     SERVICE_SELECT_SOUND_MODE,
     SERVICE_SELECT_SOURCE,
@@ -30,6 +46,7 @@ from homeassistant.components.media_player import (
     SERVICE_VOLUME_MUTE,
     SERVICE_VOLUME_SET,
     SERVICE_VOLUME_UP,
+    MediaPlayerState,
     MediaType,
 )
 from homeassistant.const import ATTR_ENTITY_ID, Platform
@@ -459,6 +476,9 @@ async def test_set_volume_level_lost(hass: HomeAssistant, state_1: State) -> Non
     [
         (SourceCodes.DAB, MediaType.MUSIC),
         (SourceCodes.FM, MediaType.MUSIC),
+        (SourceCodes.NET, MediaType.MUSIC),
+        (SourceCodes.USB, MediaType.MUSIC),
+        (SourceCodes.BT, MediaType.MUSIC),
         (SourceCodes.PVR, None),
         (None, None),
     ],
@@ -554,3 +574,180 @@ async def test_media_title(
         media_channel.return_value = channel
         data = await update(hass, client, MOCK_ENTITY_ID)
         assert data.attributes.get("media_title") == title
+
+
+@pytest.mark.parametrize(
+    ("source", "network_status", "expected"),
+    [
+        (SourceCodes.NET, NetworkPlaybackStatus.PLAYING, MediaPlayerState.PLAYING),
+        (SourceCodes.NET, NetworkPlaybackStatus.PAUSED, MediaPlayerState.PAUSED),
+        (SourceCodes.NET, NetworkPlaybackStatus.STOPPED, MediaPlayerState.IDLE),
+        (
+            SourceCodes.NET,
+            NetworkPlaybackStatus.TRANSITIONING,
+            MediaPlayerState.BUFFERING,
+        ),
+        (SourceCodes.USB, NetworkPlaybackStatus.PLAYING, MediaPlayerState.PLAYING),
+        (SourceCodes.NET, None, MediaPlayerState.ON),
+        (SourceCodes.BD, NetworkPlaybackStatus.PLAYING, MediaPlayerState.ON),
+    ],
+)
+@pytest.mark.usefixtures("player_setup")
+async def test_state_for_network_playback(
+    hass: HomeAssistant,
+    client: Mock,
+    state_1: State,
+    source: SourceCodes,
+    network_status: NetworkPlaybackStatus | None,
+    expected: MediaPlayerState,
+) -> None:
+    """Network playback status drives state for NET/USB sources only."""
+    state_1.get_source.return_value = source
+    state_1.get_network_playback_status.return_value = network_status
+    data = await update(hass, client, MOCK_ENTITY_ID)
+    assert data.state == expected
+
+
+@pytest.mark.parametrize(
+    ("bt_status", "expected"),
+    [
+        (BluetoothAudioStatus.PLAYING_SBC, MediaPlayerState.PLAYING),
+        (BluetoothAudioStatus.PLAYING_APTX_HD, MediaPlayerState.PLAYING),
+        (BluetoothAudioStatus.PAUSED, MediaPlayerState.PAUSED),
+        (BluetoothAudioStatus.NO_CONNECTION, MediaPlayerState.ON),
+        (None, MediaPlayerState.ON),
+    ],
+)
+@pytest.mark.usefixtures("player_setup")
+async def test_state_for_bluetooth(
+    hass: HomeAssistant,
+    client: Mock,
+    state_1: State,
+    bt_status: BluetoothAudioStatus | None,
+    expected: MediaPlayerState,
+) -> None:
+    """Bluetooth audio status drives state for the BT source."""
+    state_1.get_source.return_value = SourceCodes.BT
+    state_1.get_bluetooth_status.return_value = (bt_status, "")
+    data = await update(hass, client, MOCK_ENTITY_ID)
+    assert data.state == expected
+
+
+@pytest.mark.parametrize(
+    ("service", "code"),
+    [
+        (SERVICE_MEDIA_PLAY, RC5CodePlayback.PLAY),
+        (SERVICE_MEDIA_PAUSE, RC5CodePlayback.PAUSE),
+        (SERVICE_MEDIA_STOP, RC5CodePlayback.STOP),
+        (SERVICE_MEDIA_NEXT_TRACK, RC5CodePlayback.SKIP_FORWARD),
+        (SERVICE_MEDIA_PREVIOUS_TRACK, RC5CodePlayback.SKIP_BACK),
+    ],
+)
+@pytest.mark.usefixtures("player_setup")
+async def test_playback_controls(
+    hass: HomeAssistant,
+    state_1: State,
+    service: str,
+    code: RC5CodePlayback,
+) -> None:
+    """Each playback service forwards the matching RC5 playback code."""
+    await hass.services.async_call(
+        MEDIA_PLAYER_DOMAIN,
+        service,
+        {ATTR_ENTITY_ID: MOCK_ENTITY_ID},
+        blocking=True,
+    )
+    state_1.send_playback.assert_called_once_with(code)
+
+
+@pytest.mark.usefixtures("player_setup")
+async def test_playback_unsupported_on_model(
+    hass: HomeAssistant,
+    state_1: State,
+) -> None:
+    """Library ValueError on send_playback surfaces as HomeAssistantError."""
+    state_1.send_playback.side_effect = ValueError("not supported")
+
+    with pytest.raises(HomeAssistantError):
+        await hass.services.async_call(
+            MEDIA_PLAYER_DOMAIN,
+            SERVICE_MEDIA_PLAY,
+            {ATTR_ENTITY_ID: MOCK_ENTITY_ID},
+            blocking=True,
+        )
+
+
+@pytest.mark.usefixtures("player_setup")
+async def test_playback_connection_failed(
+    hass: HomeAssistant,
+    state_1: State,
+) -> None:
+    """ConnectionFailed on send_playback surfaces as HomeAssistantError."""
+    state_1.send_playback.side_effect = ConnectionFailed()
+
+    with pytest.raises(HomeAssistantError):
+        await hass.services.async_call(
+            MEDIA_PLAYER_DOMAIN,
+            SERVICE_MEDIA_PLAY,
+            {ATTR_ENTITY_ID: MOCK_ENTITY_ID},
+            blocking=True,
+        )
+
+
+@pytest.mark.usefixtures("player_setup")
+async def test_now_playing_metadata(
+    hass: HomeAssistant,
+    client: Mock,
+    state_1: State,
+) -> None:
+    """NowPlayingInfo populates title/artist/album/app_name for network sources."""
+    state_1.get_source.return_value = SourceCodes.NET
+    state_1.get_now_playing.return_value = NowPlayingInfo(
+        track="Song",
+        artist="Artist",
+        album="Album",
+        application="Spotify",
+        sample_rate=48000,
+        encoder=NowPlayingEncoder.FLAC,
+    )
+    data = await update(hass, client, MOCK_ENTITY_ID)
+    assert data.attributes.get("media_title") == "Song"
+    assert data.attributes.get(ATTR_MEDIA_ARTIST) == "Artist"
+    assert data.attributes.get(ATTR_MEDIA_ALBUM_NAME) == "Album"
+    assert data.attributes.get("app_name") == "Spotify"
+    assert data.attributes.get("media_sample_rate") == 48000
+    assert data.attributes.get("media_encoder") == "FLAC"
+
+
+@pytest.mark.usefixtures("player_setup")
+async def test_bluetooth_track_as_title(
+    hass: HomeAssistant,
+    client: Mock,
+    state_1: State,
+) -> None:
+    """When there's no NowPlayingInfo, BT AVRCP track text becomes the title."""
+    state_1.get_source.return_value = SourceCodes.BT
+    state_1.get_bluetooth_status.return_value = (
+        BluetoothAudioStatus.PLAYING_APTX_HD,
+        "From my phone",
+    )
+    data = await update(hass, client, MOCK_ENTITY_ID)
+    assert data.attributes.get("media_title") == "From my phone"
+    assert data.attributes.get("bluetooth_codec") == "aptX HD"
+
+
+@pytest.mark.usefixtures("player_setup")
+async def test_select_source_unsupported_raises(
+    hass: HomeAssistant,
+    state_1: State,
+) -> None:
+    """Selecting a source not in the model's source list raises validation error."""
+    state_1.get_source_list.return_value = [SourceCodes.CD]
+    with pytest.raises(ServiceValidationError):
+        await hass.services.async_call(
+            MEDIA_PLAYER_DOMAIN,
+            SERVICE_SELECT_SOURCE,
+            {ATTR_ENTITY_ID: MOCK_ENTITY_ID, ATTR_INPUT_SOURCE: "BD"},
+            blocking=True,
+        )
+    state_1.set_source.assert_not_called()
