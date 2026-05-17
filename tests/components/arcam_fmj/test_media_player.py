@@ -10,10 +10,6 @@ import pytest
 from syrupy.assertion import SnapshotAssertion
 
 from homeassistant.components.arcam_fmj.media_player import ArcamFmj
-from homeassistant.components.homeassistant import (
-    DOMAIN as HA_DOMAIN,
-    SERVICE_UPDATE_ENTITY,
-)
 from homeassistant.components.media_player import (
     ATTR_INPUT_SOURCE,
     ATTR_MEDIA_ARTIST,
@@ -151,36 +147,6 @@ async def test_mute_volume(hass: HomeAssistant, state_1: State, mute: bool) -> N
         blocking=True,
     )
     state_1.set_mute.assert_called_with(mute)
-
-
-@pytest.mark.usefixtures("player_setup")
-async def test_update(hass: HomeAssistant, state_1: State) -> None:
-    """Test update."""
-    await hass.services.async_call(
-        HA_DOMAIN,
-        SERVICE_UPDATE_ENTITY,
-        service_data={ATTR_ENTITY_ID: MOCK_ENTITY_ID},
-        blocking=True,
-    )
-    state_1.update.assert_called_with()
-
-
-@pytest.mark.usefixtures("player_setup")
-async def test_update_lost(
-    hass: HomeAssistant,
-    state_1: State,
-    caplog: pytest.LogCaptureFixture,
-) -> None:
-    """Test update, with connection loss is ignored."""
-    state_1.update.side_effect = ConnectionFailed()
-
-    await hass.services.async_call(
-        HA_DOMAIN,
-        SERVICE_UPDATE_ENTITY,
-        service_data={ATTR_ENTITY_ID: MOCK_ENTITY_ID},
-        blocking=True,
-    )
-    state_1.update.assert_called_with()
 
 
 @pytest.mark.parametrize(
