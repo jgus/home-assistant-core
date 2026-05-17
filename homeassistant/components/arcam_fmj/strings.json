@@ -144,6 +144,9 @@
     "connection_failed": {
       "message": "Connection failed to the device."
     },
+    "invalid_preset": {
+      "message": "Invalid preset media id: {media}."
+    },
     "unsupported_media": {
       "message": "Unsupported media: {media}."
     },

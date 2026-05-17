@@ -184,16 +184,23 @@ class ArcamFmj(ArcamFmjEntity, MediaPlayerEntity):
         self, media_type: MediaType | str, media_id: str, **kwargs: Any
     ) -> None:
         """Play media."""
-
-        if media_id.startswith("preset:"):
-            preset = int(media_id[7:])
-            await self._state.set_tuner_preset(preset)
-        else:
+        if not media_id.startswith("preset:"):
             raise ServiceValidationError(
                 translation_domain=DOMAIN,
                 translation_key="unsupported_media",
                 translation_placeholders={"media": media_id},
             )
+
+        try:
+            preset = int(media_id.removeprefix("preset:"))
+        except ValueError as exception:
+            raise ServiceValidationError(
+                translation_domain=DOMAIN,
+                translation_key="invalid_preset",
+                translation_placeholders={"media": media_id},
+            ) from exception
+
+        await self._state.set_tuner_preset(preset)
 
     @property
     def source(self) -> str | None:

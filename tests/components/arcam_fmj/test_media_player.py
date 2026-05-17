@@ -356,6 +356,34 @@ async def test_play_media_invalid(hass: HomeAssistant, state_1: State) -> None:
     state_1.set_tuner_preset.assert_not_called()
 
 
+@pytest.mark.parametrize("media_id", ["preset:abc", "preset:"])
+@pytest.mark.usefixtures("player_setup")
+async def test_play_media_invalid_preset(
+    hass: HomeAssistant,
+    state_1: State,
+    media_id: str,
+) -> None:
+    """Malformed preset payloads surface as a validation error, not a crash."""
+    with pytest.raises(
+        ServiceValidationError,
+        check=lambda e: (
+            e.translation_domain == "arcam_fmj"
+            and e.translation_key == "invalid_preset"
+        ),
+    ):
+        await hass.services.async_call(
+            MEDIA_PLAYER_DOMAIN,
+            SERVICE_PLAY_MEDIA,
+            service_data={
+                ATTR_ENTITY_ID: MOCK_ENTITY_ID,
+                ATTR_MEDIA_CONTENT_TYPE: MediaType.MUSIC,
+                ATTR_MEDIA_CONTENT_ID: media_id,
+            },
+            blocking=True,
+        )
+    state_1.set_tuner_preset.assert_not_called()
+
+
 @pytest.mark.parametrize(
     ("mode", "mode_enum"),
     [
