@@ -4,16 +4,20 @@ from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
 
 from arcam.fmj import (
+    APIVERSION_AVR_PRE_HDA_SERIES,
+    APIVERSION_AVR_SA_AND_ST_SERIES,
     APIVERSION_AVR_SERIES,
     APIVERSION_DIRECT_MODE_SERIES,
     APIVERSION_IMAX_SERIES,
     CompressionMode,
     DecodeMode2CH,
     DecodeModeMCH,
+    DisplayBrightness,
     DolbyAudioMode,
     ImaxEnhancedMode,
     IntOrTypeEnum,
     RoomEqMode,
+    VideoSelection,
 )
 from arcam.fmj.state import State
 
@@ -104,6 +108,26 @@ SELECTS: tuple[ArcamFmjSelectEntityDescription, ...] = (
         enum_type=ImaxEnhancedMode,
         value_fn=lambda state: state.get_imax_enhanced(),
         set_fn=lambda state, mode: state.set_imax_enhanced(mode),
+    ),
+    ArcamFmjSelectEntityDescription(
+        key="video_selection",
+        translation_key="video_selection",
+        entity_category=EntityCategory.CONFIG,
+        api_versions=APIVERSION_AVR_PRE_HDA_SERIES,
+        zones=frozenset({1}),
+        enum_type=VideoSelection,
+        value_fn=lambda state: state.get_video_selection(),
+        set_fn=lambda state, mode: state.set_video_selection(mode),
+    ),
+    ArcamFmjSelectEntityDescription(
+        key="display_brightness",
+        translation_key="display_brightness",
+        entity_category=EntityCategory.CONFIG,
+        api_versions=APIVERSION_AVR_SA_AND_ST_SERIES,
+        zones=frozenset({1}),
+        enum_type=DisplayBrightness,
+        value_fn=lambda state: state.get_display_brightness(),
+        set_fn=lambda state, mode: state.set_display_brightness(mode),
     ),
 )
 

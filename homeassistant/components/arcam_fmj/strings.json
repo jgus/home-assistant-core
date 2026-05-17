@@ -274,6 +274,14 @@
           "on": "On"
         }
       },
+      "display_brightness": {
+        "name": "Display brightness",
+        "state": {
+          "l1": "Low",
+          "l2": "High",
+          "off": "Off"
+        }
+      },
       "room_eq": {
         "name": "Room EQ",
         "state": {
@@ -281,6 +289,18 @@
           "eq2": "EQ 2",
           "eq3": "EQ 3",
           "off": "Off"
+        }
+      },
+      "video_selection": {
+        "name": "Video selection",
+        "state": {
+          "av": "AV",
+          "bd": "BD",
+          "game": "Game",
+          "pvr": "PVR",
+          "sat": "Satellite",
+          "stb": "Set-top box",
+          "vcr": "VCR"
         }
       }
     }

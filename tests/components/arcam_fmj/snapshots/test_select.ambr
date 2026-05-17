@@ -68,6 +68,67 @@
     'state': 'unknown',
   })
 # ---
+# name: test_setup[select.arcam_fmj_127_0_0_1_display_brightness-entry]
+  EntityRegistryEntrySnapshot({
+    'aliases': list([
+      None,
+    ]),
+    'area_id': None,
+    'capabilities': dict({
+      'options': list([
+        'off',
+        'l1',
+        'l2',
+      ]),
+    }),
+    'config_entry_id': <ANY>,
+    'config_subentry_id': <ANY>,
+    'device_class': None,
+    'device_id': <ANY>,
+    'disabled_by': None,
+    'domain': 'select',
+    'entity_category': <EntityCategory.CONFIG: 'config'>,
+    'entity_id': 'select.arcam_fmj_127_0_0_1_display_brightness',
+    'has_entity_name': True,
+    'hidden_by': None,
+    'icon': None,
+    'id': <ANY>,
+    'labels': set({
+    }),
+    'name': None,
+    'object_id_base': 'Display brightness',
+    'options': dict({
+    }),
+    'original_device_class': None,
+    'original_icon': None,
+    'original_name': 'Display brightness',
+    'platform': 'arcam_fmj',
+    'previous_unique_id': None,
+    'suggested_object_id': None,
+    'supported_features': 0,
+    'translation_key': 'display_brightness',
+    'unique_id': '456789abcdef-1-display_brightness',
+    'unit_of_measurement': None,
+  })
+# ---
+# name: test_setup[select.arcam_fmj_127_0_0_1_display_brightness-state]
+  StateSnapshot({
+    'attributes': ReadOnlyDict({
+      'friendly_name': 'Arcam FMJ (127.0.0.1) Display brightness',
+      'options': list([
+        'off',
+        'l1',
+        'l2',
+      ]),
+    }),
+    'context': <ANY>,
+    'entity_id': 'select.arcam_fmj_127_0_0_1_display_brightness',
+    'last_changed': <ANY>,
+    'last_reported': <ANY>,
+    'last_updated': <ANY>,
+    'state': 'unknown',
+  })
+# ---
 # name: test_setup[select.arcam_fmj_127_0_0_1_dolby_audio-entry]
   EntityRegistryEntrySnapshot({
     'aliases': list([
@@ -371,6 +432,75 @@
     }),
     'context': <ANY>,
     'entity_id': 'select.arcam_fmj_127_0_0_1_room_eq',
+    'last_changed': <ANY>,
+    'last_reported': <ANY>,
+    'last_updated': <ANY>,
+    'state': 'unknown',
+  })
+# ---
+# name: test_setup[select.arcam_fmj_127_0_0_1_video_selection-entry]
+  EntityRegistryEntrySnapshot({
+    'aliases': list([
+      None,
+    ]),
+    'area_id': None,
+    'capabilities': dict({
+      'options': list([
+        'bd',
+        'sat',
+        'av',
+        'pvr',
+        'vcr',
+        'game',
+        'stb',
+      ]),
+    }),
+    'config_entry_id': <ANY>,
+    'config_subentry_id': <ANY>,
+    'device_class': None,
+    'device_id': <ANY>,
+    'disabled_by': None,
+    'domain': 'select',
+    'entity_category': <EntityCategory.CONFIG: 'config'>,
+    'entity_id': 'select.arcam_fmj_127_0_0_1_video_selection',
+    'has_entity_name': True,
+    'hidden_by': None,
+    'icon': None,
+    'id': <ANY>,
+    'labels': set({
+    }),
+    'name': None,
+    'object_id_base': 'Video selection',
+    'options': dict({
+    }),
+    'original_device_class': None,
+    'original_icon': None,
+    'original_name': 'Video selection',
+    'platform': 'arcam_fmj',
+    'previous_unique_id': None,
+    'suggested_object_id': None,
+    'supported_features': 0,
+    'translation_key': 'video_selection',
+    'unique_id': '456789abcdef-1-video_selection',
+    'unit_of_measurement': None,
+  })
+# ---
+# name: test_setup[select.arcam_fmj_127_0_0_1_video_selection-state]
+  StateSnapshot({
+    'attributes': ReadOnlyDict({
+      'friendly_name': 'Arcam FMJ (127.0.0.1) Video selection',
+      'options': list([
+        'bd',
+        'sat',
+        'av',
+        'pvr',
+        'vcr',
+        'game',
+        'stb',
+      ]),
+    }),
+    'context': <ANY>,
+    'entity_id': 'select.arcam_fmj_127_0_0_1_video_selection',
     'last_changed': <ANY>,
     'last_reported': <ANY>,
     'last_updated': <ANY>,

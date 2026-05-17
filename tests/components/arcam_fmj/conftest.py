@@ -145,6 +145,8 @@ def _build_state_mock(client: Mock, zone: int, model: str | None) -> Mock:
     state.get_max_streaming_volume.return_value = None
     state.get_dolby_pliix_dimension.return_value = None
     state.get_dolby_pliix_centre_width.return_value = None
+    state.get_video_selection.return_value = None
+    state.get_display_brightness.return_value = None
     state.to_dict.return_value = {
         "POWER": True,
         "VOLUME": 0.0,

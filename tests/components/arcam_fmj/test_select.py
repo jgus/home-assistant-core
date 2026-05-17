@@ -8,9 +8,11 @@ from arcam.fmj import (
     ConnectionFailed,
     DecodeMode2CH,
     DecodeModeMCH,
+    DisplayBrightness,
     DolbyAudioMode,
     ImaxEnhancedMode,
     RoomEqMode,
+    VideoSelection,
 )
 from arcam.fmj.state import State
 import pytest
@@ -34,6 +36,8 @@ ENTITY_DOLBY = "select.arcam_fmj_127_0_0_1_dolby_audio"
 ENTITY_COMPRESSION = "select.arcam_fmj_127_0_0_1_dynamic_range_compression"
 ENTITY_ROOM_EQ = "select.arcam_fmj_127_0_0_1_room_eq"
 ENTITY_IMAX = "select.arcam_fmj_127_0_0_1_imax_enhanced"
+ENTITY_DISPLAY = "select.arcam_fmj_127_0_0_1_display_brightness"
+ENTITY_VIDEO = "select.arcam_fmj_127_0_0_1_video_selection"
 
 
 @pytest.fixture(autouse=True)
@@ -112,6 +116,8 @@ async def test_decode_2ch_options_for_450_series(hass: HomeAssistant) -> None:
         (ENTITY_COMPRESSION, CompressionMode.HIGH, "high"),
         (ENTITY_ROOM_EQ, RoomEqMode.EQ2, "eq2"),
         (ENTITY_IMAX, ImaxEnhancedMode.AUTO, "auto"),
+        (ENTITY_VIDEO, VideoSelection.BD, "bd"),
+        (ENTITY_DISPLAY, DisplayBrightness.L1, "l1"),
     ],
 )
 @pytest.mark.usefixtures("player_setup")
@@ -131,6 +137,8 @@ async def test_current_option(
         ENTITY_COMPRESSION: "get_compression",
         ENTITY_ROOM_EQ: "get_room_equalization",
         ENTITY_IMAX: "get_imax_enhanced",
+        ENTITY_VIDEO: "get_video_selection",
+        ENTITY_DISPLAY: "get_display_brightness",
     }[entity_id]
     getattr(state_1, method).return_value = value
     client.notify_data_updated()
@@ -172,6 +180,8 @@ async def test_room_eq_not_calculated_reports_unknown(
         (ENTITY_COMPRESSION, "medium", "set_compression", CompressionMode.MEDIUM),
         (ENTITY_ROOM_EQ, "eq1", "set_room_equalization", RoomEqMode.EQ1),
         (ENTITY_IMAX, "auto", "set_imax_enhanced", ImaxEnhancedMode.AUTO),
+        (ENTITY_VIDEO, "sat", "set_video_selection", VideoSelection.SAT),
+        (ENTITY_DISPLAY, "l2", "set_display_brightness", DisplayBrightness.L2),
     ],
 )
 @pytest.mark.usefixtures("player_setup")
