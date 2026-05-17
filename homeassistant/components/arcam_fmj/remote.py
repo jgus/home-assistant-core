@@ -5,12 +5,16 @@ from collections.abc import Awaitable, Callable, Iterable
 from typing import Any
 
 from arcam.fmj import (
+    DecodeMode2CH,
+    DecodeModeMCH,
+    DisplayBrightness,
     HdmiOutput,
     RC5CodeColor,
     RC5CodeMenuAccess,
     RC5CodeNavigation,
     RC5CodePlayback,
     RC5CodeToggle,
+    SourceCodes,
 )
 from arcam.fmj.state import State
 
@@ -58,6 +62,22 @@ def _hdmi(output: HdmiOutput) -> _CommandSender:
     return lambda state: state.set_hdmi_output(output)
 
 
+def _source(src: SourceCodes) -> _CommandSender:
+    return lambda state: state.set_source(src)
+
+
+def _decode_2ch(mode: DecodeMode2CH) -> _CommandSender:
+    return lambda state: state.set_decode_mode_2ch(mode)
+
+
+def _decode_mch(mode: DecodeModeMCH) -> _CommandSender:
+    return lambda state: state.set_decode_mode_mch(mode)
+
+
+def _display(level: DisplayBrightness) -> _CommandSender:
+    return lambda state: state.set_display_brightness(level)
+
+
 def _numeric(digit: int) -> _CommandSender:
     return lambda state: state.send_numeric(digit)
 
@@ -86,6 +106,28 @@ COMMANDS: dict[str, _CommandSender] = {
     "dolby_pliix_centre_width_down": lambda s: s.dec_dolby_pliix_centre_width(),
     "dolby_pliix_dimension_up": lambda s: s.inc_dolby_pliix_dimension(),
     "dolby_pliix_dimension_down": lambda s: s.dec_dolby_pliix_dimension(),
+    # The commands below duplicate things already controllable through other
+    # entities (media_player, select, switch). They exist so users who think
+    # in terms of a physical Arcam remote can drive every button from
+    # remote.send_command. The library picks the right transport (RC5 or a
+    # direct command) per model under the hood.
+    **{f"source_{src.name.lower()}": _source(src) for src in SourceCodes},
+    **{f"decode_2ch_{m.name.lower()}": _decode_2ch(m) for m in DecodeMode2CH},
+    **{f"decode_mch_{m.name.lower()}": _decode_mch(m) for m in DecodeModeMCH},
+    **{
+        f"display_brightness_{level.name.lower()}": _display(level)
+        for level in DisplayBrightness
+    },
+    "power_on": lambda state: state.set_power(True),
+    "power_off": lambda state: state.set_power(False),
+    "mute_on": lambda state: state.set_mute(True),
+    "mute_off": lambda state: state.set_mute(False),
+    "volume_up": lambda state: state.inc_volume(),
+    "volume_down": lambda state: state.dec_volume(),
+    "direct_mode_on": lambda state: state.set_direct_mode(True),
+    "direct_mode_off": lambda state: state.set_direct_mode(False),
+    "dolby_pliix_panorama_on": lambda state: state.set_dolby_pliix_panorama(True),
+    "dolby_pliix_panorama_off": lambda state: state.set_dolby_pliix_panorama(False),
 }
 
 

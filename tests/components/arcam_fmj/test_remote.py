@@ -5,12 +5,16 @@ from unittest.mock import Mock, call, patch
 
 from arcam.fmj import (
     ConnectionFailed,
+    DecodeMode2CH,
+    DecodeModeMCH,
+    DisplayBrightness,
     HdmiOutput,
     RC5CodeColor,
     RC5CodeMenuAccess,
     RC5CodeNavigation,
     RC5CodePlayback,
     RC5CodeToggle,
+    SourceCodes,
 )
 from arcam.fmj.state import State
 import pytest
@@ -150,6 +154,78 @@ async def test_send_command_numeric(
         blocking=True,
     )
     state_1.send_numeric.assert_called_once_with(digit)
+
+
+@pytest.mark.parametrize(
+    ("command", "method", "expected"),
+    [
+        ("source_cd", "set_source", SourceCodes.CD),
+        ("source_bd", "set_source", SourceCodes.BD),
+        ("source_net_usb", "set_source", SourceCodes.NET_USB),
+        ("decode_2ch_stereo", "set_decode_mode_2ch", DecodeMode2CH.STEREO),
+        (
+            "decode_2ch_dolby_plii_iix_movie",
+            "set_decode_mode_2ch",
+            DecodeMode2CH.DOLBY_PLII_IIx_MOVIE,
+        ),
+        (
+            "decode_mch_stereo_downmix",
+            "set_decode_mode_mch",
+            DecodeModeMCH.STEREO_DOWNMIX,
+        ),
+        ("display_brightness_off", "set_display_brightness", DisplayBrightness.OFF),
+        ("display_brightness_l1", "set_display_brightness", DisplayBrightness.L1),
+    ],
+)
+@pytest.mark.usefixtures("player_setup")
+async def test_send_command_redundant_enum(
+    hass: HomeAssistant,
+    state_1: State,
+    command: str,
+    method: str,
+    expected: object,
+) -> None:
+    """The 'redundant' enum commands forward to the right library method."""
+    await hass.services.async_call(
+        REMOTE_DOMAIN,
+        SERVICE_SEND_COMMAND,
+        {ATTR_ENTITY_ID: REMOTE_ENTITY_ID, ATTR_COMMAND: [command]},
+        blocking=True,
+    )
+    getattr(state_1, method).assert_called_once_with(expected)
+
+
+@pytest.mark.parametrize(
+    ("command", "method", "args"),
+    [
+        ("power_on", "set_power", (True,)),
+        ("power_off", "set_power", (False,)),
+        ("mute_on", "set_mute", (True,)),
+        ("mute_off", "set_mute", (False,)),
+        ("volume_up", "inc_volume", ()),
+        ("volume_down", "dec_volume", ()),
+        ("direct_mode_on", "set_direct_mode", (True,)),
+        ("direct_mode_off", "set_direct_mode", (False,)),
+        ("dolby_pliix_panorama_on", "set_dolby_pliix_panorama", (True,)),
+        ("dolby_pliix_panorama_off", "set_dolby_pliix_panorama", (False,)),
+    ],
+)
+@pytest.mark.usefixtures("player_setup")
+async def test_send_command_redundant_bool(
+    hass: HomeAssistant,
+    state_1: State,
+    command: str,
+    method: str,
+    args: tuple,
+) -> None:
+    """The 'redundant' on/off and inc/dec commands route correctly."""
+    await hass.services.async_call(
+        REMOTE_DOMAIN,
+        SERVICE_SEND_COMMAND,
+        {ATTR_ENTITY_ID: REMOTE_ENTITY_ID, ATTR_COMMAND: [command]},
+        blocking=True,
+    )
+    getattr(state_1, method).assert_called_once_with(*args)
 
 
 @pytest.mark.parametrize(
