@@ -77,4 +77,4 @@ rules:
   inject-websession:
     status: exempt
     comment: The integration uses a raw asyncio TCP client, not an aiohttp session.
-  strict-typing: todo
+  strict-typing: done
