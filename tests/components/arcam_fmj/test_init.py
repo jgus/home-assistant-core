@@ -93,6 +93,7 @@ async def test_disconnect_marks_all_entities_unavailable(
         "remote",
         "select",
         "sensor",
+        "switch",
     }
     for entry in entries:
         state = hass.states.get(entry.entity_id)

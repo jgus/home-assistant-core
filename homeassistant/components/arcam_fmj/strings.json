@@ -303,6 +303,14 @@
           "vcr": "VCR"
         }
       }
+    },
+    "switch": {
+      "direct_mode": {
+        "name": "Direct mode"
+      },
+      "dolby_pliix_panorama": {
+        "name": "Dolby PLII/IIx music panorama"
+      }
     }
   },
   "exceptions": {
