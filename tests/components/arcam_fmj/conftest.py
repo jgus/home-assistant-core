@@ -5,6 +5,7 @@ from collections.abc import AsyncGenerator, Generator
 from contextlib import contextmanager
 from unittest.mock import AsyncMock, Mock, patch
 
+from arcam.fmj import AmxDuetResponse
 from arcam.fmj.client import Client, ResponsePacket
 from arcam.fmj.state import State
 import pytest
@@ -27,10 +28,22 @@ MOCK_UUID = "456789abcdef"
 MOCK_UDN = f"uuid:01234567-89ab-cdef-0123-{MOCK_UUID}"
 MOCK_NAME = f"{DEFAULT_NAME} ({MOCK_HOST})"
 MOCK_CONFIG_ENTRY = {CONF_HOST: MOCK_HOST, CONF_PORT: MOCK_PORT}
+# AVR550 is in APIVERSION_860_SERIES → supports zone 2.
+MOCK_MODEL = "AVR550"
+MOCK_REVISION = "1.0"
+
+
+@pytest.fixture(name="model")
+def model_fixture(request: pytest.FixtureRequest) -> str | None:
+    """Return the AMX Duet device_model used by the mocked client.
+
+    Override per-test with @pytest.mark.parametrize("model", [...], indirect=True).
+    """
+    return getattr(request, "param", MOCK_MODEL)
 
 
 @pytest.fixture(name="client")
-def client_fixture() -> Generator[Mock]:
+def client_fixture(model: str | None) -> Generator[Mock]:
     """Get a mocked client."""
     client = Mock(Client)
     client.host = MOCK_HOST
@@ -38,6 +51,10 @@ def client_fixture() -> Generator[Mock]:
 
     queue = Queue[BaseException | None]()
     listeners = set()
+
+    amxduet = Mock(AmxDuetResponse)
+    amxduet.device_model = model
+    amxduet.device_revision = MOCK_REVISION
 
     async def _start():
         client.connected = True
@@ -47,6 +64,9 @@ def client_fixture() -> Generator[Mock]:
         client.connected = False
         if isinstance(result, BaseException):
             raise result
+
+    async def _request_raw(request, priority=0):
+        return amxduet
 
     @contextmanager
     def _listen(listener):
@@ -68,6 +88,7 @@ def client_fixture() -> Generator[Mock]:
     client.start.side_effect = _start
     client.process.side_effect = _process
     client.listen.side_effect = _listen
+    client.request_raw.side_effect = _request_raw
     client.notify_data_updated = _notify_data_updated
     client.notify_connection = _notify_connection
 
@@ -76,13 +97,13 @@ def client_fixture() -> Generator[Mock]:
     queue.put_nowait(CancelledError())
 
 
-def _build_state_mock(client: Mock, zone: int) -> Mock:
+def _build_state_mock(client: Mock, zone: int, model: str | None) -> Mock:
     """Build a mocked State for a given zone."""
     state = Mock(State)
     state.client = client
     state.zn = zone
-    state.model = None
-    state.revision = None
+    state.model = model
+    state.revision = MOCK_REVISION
     state.get_power.return_value = True
     state.get_volume.return_value = 0.0
     state.get_source.return_value = None
@@ -116,15 +137,15 @@ def _build_state_mock(client: Mock, zone: int) -> Mock:
 
 
 @pytest.fixture(name="state_1")
-def state_1_fixture(client: Mock) -> State:
+def state_1_fixture(client: Mock, model: str | None) -> State:
     """Get a mocked state."""
-    return _build_state_mock(client, 1)
+    return _build_state_mock(client, 1, model)
 
 
 @pytest.fixture(name="state_2")
-def state_2_fixture(client: Mock) -> State:
+def state_2_fixture(client: Mock, model: str | None) -> State:
     """Get a mocked state."""
-    return _build_state_mock(client, 2)
+    return _build_state_mock(client, 2, model)
 
 
 @pytest.fixture(name="mock_config_entry")

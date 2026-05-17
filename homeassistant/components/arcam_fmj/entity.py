@@ -40,7 +40,6 @@ class ArcamFmjEntity(CoordinatorEntity[ArcamFmjCoordinator]):
         """Initialize the entity."""
         super().__init__(coordinator)
         self._attr_device_info = coordinator.device_info
-        self._attr_entity_registry_enabled_default = coordinator.state.zn == 1
         self._attr_unique_id = coordinator.zone_unique_id
 
     @property

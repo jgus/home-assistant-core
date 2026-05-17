@@ -69,9 +69,10 @@ async def async_setup_entry(
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     """Set up the Arcam FMJ remote entities."""
-    coordinators = config_entry.runtime_data.coordinators
-
-    async_add_entities(ArcamFmjRemote(coordinators[zone]) for zone in (1, 2))
+    async_add_entities(
+        ArcamFmjRemote(coordinator)
+        for coordinator in config_entry.runtime_data.coordinators.values()
+    )
 
 
 class ArcamFmjRemote(ArcamFmjEntity, RemoteEntity):

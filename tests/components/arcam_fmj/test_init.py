@@ -36,6 +36,41 @@ async def test_setup_retries_when_unreachable(
     assert mock_config_entry.state is ConfigEntryState.SETUP_RETRY
 
 
+@pytest.mark.parametrize("model", [None], indirect=True)
+async def test_setup_retries_when_model_missing(
+    hass: HomeAssistant,
+    mock_config_entry: MockConfigEntry,
+    client: Mock,
+) -> None:
+    """Setup should retry if the AMX Duet response has no device model."""
+    with patch("homeassistant.components.arcam_fmj.Client", return_value=client):
+        await hass.config_entries.async_setup(mock_config_entry.entry_id)
+        await hass.async_block_till_done()
+
+    assert mock_config_entry.state is ConfigEntryState.SETUP_RETRY
+
+
+@pytest.mark.parametrize(
+    ("model", "expected_zones"),
+    [
+        ("AVR550", {1, 2}),
+        ("AVR30", {1, 2}),
+        ("SA30", {1}),
+        ("PA720", {1}),
+    ],
+    indirect=["model"],
+)
+@pytest.mark.usefixtures("player_setup")
+async def test_zone_creation_follows_model(
+    mock_config_entry: MockConfigEntry,
+    model: str,
+    expected_zones: set[int],
+) -> None:
+    """Coordinators are created only for zones the model exposes."""
+    assert set(mock_config_entry.runtime_data.coordinators) == expected_zones
+    assert mock_config_entry.runtime_data.model == model
+
+
 @pytest.mark.usefixtures("player_setup")
 async def test_disconnect_marks_all_entities_unavailable(
     hass: HomeAssistant,

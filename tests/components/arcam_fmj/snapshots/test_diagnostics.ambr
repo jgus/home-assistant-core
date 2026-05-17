@@ -17,8 +17,8 @@
       '1': dict({
         'last_exception': None,
         'last_update_success': True,
-        'model': None,
-        'revision': None,
+        'model': 'AVR550',
+        'revision': '1.0',
         'state': dict({
           'DAB_STATION': None,
           'DECODE_MODE_2CH': None,
@@ -43,8 +43,8 @@
       '2': dict({
         'last_exception': None,
         'last_update_success': True,
-        'model': None,
-        'revision': None,
+        'model': 'AVR550',
+        'revision': '1.0',
         'state': dict({
           'DAB_STATION': None,
           'DECODE_MODE_2CH': None,

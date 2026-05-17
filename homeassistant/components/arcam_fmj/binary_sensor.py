@@ -47,15 +47,11 @@ async def async_setup_entry(
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     """Set up Arcam FMJ binary sensors from a config entry."""
-    coordinators = config_entry.runtime_data.coordinators
-
-    entities: list[ArcamFmjBinarySensorEntity] = []
-    for coordinator in coordinators.values():
-        entities.extend(
-            ArcamFmjBinarySensorEntity(coordinator, description)
-            for description in BINARY_SENSORS
-        )
-    async_add_entities(entities)
+    async_add_entities(
+        ArcamFmjBinarySensorEntity(coordinator, description)
+        for coordinator in config_entry.runtime_data.coordinators.values()
+        for description in BINARY_SENSORS
+    )
 
 
 class ArcamFmjBinarySensorEntity(ArcamFmjDescriptionEntity, BinarySensorEntity):

@@ -24,6 +24,7 @@ class ArcamFmjRuntimeData:
 
     client: Client
     coordinators: dict[int, ArcamFmjCoordinator]
+    model: str
 
 
 type ArcamFmjConfigEntry = ConfigEntry[ArcamFmjRuntimeData]
@@ -45,6 +46,7 @@ class ArcamFmjCoordinator(DataUpdateCoordinator[None]):
         config_entry: ArcamFmjConfigEntry,
         client: Client,
         zone: int,
+        model: str,
     ) -> None:
         """Initialize the coordinator."""
         super().__init__(
@@ -67,7 +69,7 @@ class ArcamFmjCoordinator(DataUpdateCoordinator[None]):
         self.device_info = DeviceInfo(
             identifiers={(DOMAIN, unique_id_device)},
             manufacturer="Arcam",
-            model="Arcam FMJ AVR",
+            model=model,
             name=device_name,
         )
         self.zone_unique_id = f"{unique_id}-{zone}"

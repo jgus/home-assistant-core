@@ -36,10 +36,9 @@ async def async_setup_entry(
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     """Set up the configuration entry."""
-    coordinators = config_entry.runtime_data.coordinators
-
     async_add_entities(
-        [ArcamFmj(coordinators[zone]) for zone in (1, 2)],
+        ArcamFmj(coordinator)
+        for coordinator in config_entry.runtime_data.coordinators.values()
     )
 
 

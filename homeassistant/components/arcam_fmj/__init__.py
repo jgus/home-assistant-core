@@ -5,14 +5,14 @@ from asyncio import timeout
 from contextlib import AsyncExitStack
 import logging
 
-from arcam.fmj import ConnectionFailed
-from arcam.fmj.client import Client
+from arcam.fmj import APIVERSION_ZONE2_SERIES, AmxDuetRequest, ConnectionFailed
+from arcam.fmj.client import Client, ClientContext
 
 from homeassistant.const import CONF_HOST, CONF_PORT, Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
 
-from .const import DEFAULT_SCAN_INTERVAL
+from .const import DEFAULT_SCAN_INTERVAL, SETUP_TIMEOUT
 from .coordinator import ArcamFmjConfigEntry, ArcamFmjCoordinator, ArcamFmjRuntimeData
 
 _LOGGER = logging.getLogger(__name__)
@@ -31,20 +31,25 @@ async def async_setup_entry(hass: HomeAssistant, entry: ArcamFmjConfigEntry) -> 
     client = Client(entry.data[CONF_HOST], entry.data[CONF_PORT])
 
     try:
-        async with timeout(DEFAULT_SCAN_INTERVAL):
-            await client.start()
-    except (ConnectionFailed, TimeoutError) as err:
+        async with timeout(SETUP_TIMEOUT), ClientContext(client):
+            response = await client.request_raw(AmxDuetRequest())
+    except (ConnectionFailed, TimeoutError, OSError) as err:
         raise ConfigEntryNotReady(
-            f"Unable to connect to Arcam FMJ at {client.host}:{client.port}"
+            f"Unable to connect to Arcam FMJ at {client.peer}"
         ) from err
-    await client.stop()
 
-    coordinators: dict[int, ArcamFmjCoordinator] = {}
-    for zone in (1, 2):
-        coordinator = ArcamFmjCoordinator(hass, entry, client, zone)
-        coordinators[zone] = coordinator
+    model = response.device_model
+    if model is None:
+        raise ConfigEntryNotReady(
+            f"Arcam FMJ at {client.peer} did not return a model identifier"
+        )
 
-    entry.runtime_data = ArcamFmjRuntimeData(client, coordinators)
+    coordinators: dict[int, ArcamFmjCoordinator] = {
+        zone: ArcamFmjCoordinator(hass, entry, client, zone, model)
+        for zone in _supported_zones(model)
+    }
+
+    entry.runtime_data = ArcamFmjRuntimeData(client, coordinators, model)
 
     entry.async_create_background_task(
         hass,
@@ -59,6 +64,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: ArcamFmjConfigEntry) -> 
 async def async_unload_entry(hass: HomeAssistant, entry: ArcamFmjConfigEntry) -> bool:
     """Cleanup before removing config entry."""
     return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
+
+
+def _supported_zones(model: str) -> tuple[int, ...]:
+    """Return the zones the given Arcam model exposes."""
+    if model in APIVERSION_ZONE2_SERIES:
+        return (1, 2)
+    return (1,)
 
 
 async def _run_client(
