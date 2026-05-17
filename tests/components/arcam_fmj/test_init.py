@@ -54,6 +54,7 @@ async def test_disconnect_marks_all_entities_unavailable(
     assert {entry.entity_id.split(".", 1)[0] for entry in entries} == {
         "binary_sensor",
         "media_player",
+        "remote",
         "sensor",
     }
     for entry in entries:

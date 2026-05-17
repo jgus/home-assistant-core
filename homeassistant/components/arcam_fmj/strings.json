@@ -164,8 +164,14 @@
     "connection_failed": {
       "message": "Connection failed to the device."
     },
+    "invalid_command": {
+      "message": "Unknown remote command: {command}."
+    },
     "invalid_preset": {
       "message": "Invalid preset media id: {media}."
+    },
+    "unsupported_command": {
+      "message": "Remote command {command} is not supported on this Arcam FMJ model or zone."
     },
     "unsupported_media": {
       "message": "Unsupported media: {media}."
