@@ -856,3 +856,24 @@ async def test_save_settings_invalid_pin(
             blocking=True,
         )
     state_1.save_settings.assert_not_called()
+
+
+@pytest.mark.parametrize(
+    ("service", "method"),
+    [("fm_scan", "fm_scan"), ("dab_scan", "dab_scan")],
+)
+@pytest.mark.usefixtures("player_setup")
+async def test_tuner_scans(
+    hass: HomeAssistant,
+    state_1: State,
+    service: str,
+    method: str,
+) -> None:
+    """fm_scan / dab_scan actions trigger the matching library send."""
+    await hass.services.async_call(
+        "arcam_fmj",
+        service,
+        {ATTR_ENTITY_ID: MOCK_ENTITY_ID},
+        blocking=True,
+    )
+    getattr(state_1, method).assert_called_once_with()

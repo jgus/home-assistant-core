@@ -15,4 +15,6 @@ SETUP_TIMEOUT = 10
 
 SERVICE_SAVE_SETTINGS = "save_settings"
 SERVICE_RESTORE_SETTINGS = "restore_settings"
+SERVICE_FM_SCAN = "fm_scan"
+SERVICE_DAB_SCAN = "dab_scan"
 ATTR_PIN = "pin"

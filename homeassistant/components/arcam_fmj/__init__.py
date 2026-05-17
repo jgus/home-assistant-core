@@ -20,6 +20,8 @@ from .const import (
     ATTR_PIN,
     DEFAULT_SCAN_INTERVAL,
     DOMAIN,
+    SERVICE_DAB_SCAN,
+    SERVICE_FM_SCAN,
     SERVICE_RESTORE_SETTINGS,
     SERVICE_SAVE_SETTINGS,
     SETUP_TIMEOUT,
@@ -58,6 +60,18 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
             name,
             entity_domain=MEDIA_PLAYER_DOMAIN,
             schema=_PIN_SCHEMA,
+            func=func,
+        )
+    for name, func in (
+        (SERVICE_FM_SCAN, "async_fm_scan"),
+        (SERVICE_DAB_SCAN, "async_dab_scan"),
+    ):
+        service.async_register_platform_entity_service(
+            hass,
+            DOMAIN,
+            name,
+            entity_domain=MEDIA_PLAYER_DOMAIN,
+            schema=None,
             func=func,
         )
     return True

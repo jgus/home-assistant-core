@@ -23,3 +23,15 @@ restore_settings:
       selector:
         text:
           type: password
+
+fm_scan:
+  target:
+    entity:
+      domain: media_player
+      integration: arcam_fmj
+
+dab_scan:
+  target:
+    entity:
+      domain: media_player
+      integration: arcam_fmj

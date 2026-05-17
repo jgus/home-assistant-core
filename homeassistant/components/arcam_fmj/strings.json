@@ -365,6 +365,14 @@
         }
       },
       "name": "Save settings"
+    },
+    "fm_scan": {
+      "description": "Triggers an FM frequency scan on the receiver's tuner.",
+      "name": "FM scan"
+    },
+    "dab_scan": {
+      "description": "Triggers a DAB station scan on the receiver's tuner.",
+      "name": "DAB scan"
     }
   }
 }

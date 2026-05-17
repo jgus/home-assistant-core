@@ -271,6 +271,16 @@ class ArcamFmj(ArcamFmjEntity, MediaPlayerEntity):
                 translation_key="restore_settings_failed",
             ) from err
 
+    @convert_exception
+    async def async_fm_scan(self) -> None:
+        """Trigger an FM frequency scan."""
+        await self._state.fm_scan()
+
+    @convert_exception
+    async def async_dab_scan(self) -> None:
+        """Trigger a DAB station scan."""
+        await self._state.dab_scan()
+
     async def async_browse_media(
         self,
         media_content_type: MediaType | str | None = None,
