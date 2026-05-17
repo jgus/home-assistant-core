@@ -92,15 +92,11 @@ async def _run_client(
 
         except ConnectionFailed:
             if connected:
-                _LOGGER.warning(
-                    "Connection to Arcam FMJ at %s failed", client.host
-                )
+                _LOGGER.warning("Connection to Arcam FMJ at %s failed", client.host)
                 connected = False
         except TimeoutError:
             if connected:
-                _LOGGER.warning(
-                    "Connection to Arcam FMJ at %s timed out", client.host
-                )
+                _LOGGER.warning("Connection to Arcam FMJ at %s timed out", client.host)
                 connected = False
             continue
         except Exception:
