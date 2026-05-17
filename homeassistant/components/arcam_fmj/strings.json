@@ -159,6 +159,26 @@
         "name": "Incoming video vertical resolution"
       }
     },
+    "number": {
+      "balance": {
+        "name": "Balance"
+      },
+      "bass_equalization": {
+        "name": "Bass equalization"
+      },
+      "lipsync_delay": {
+        "name": "Lip sync delay"
+      },
+      "sub_stereo_trim": {
+        "name": "Sub stereo trim"
+      },
+      "subwoofer_trim": {
+        "name": "Subwoofer trim"
+      },
+      "treble_equalization": {
+        "name": "Treble equalization"
+      }
+    },
     "select": {
       "compression": {
         "name": "Dynamic range compression",

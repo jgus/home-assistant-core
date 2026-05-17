@@ -21,6 +21,7 @@ _LOGGER = logging.getLogger(__name__)
 PLATFORMS = [
     Platform.BINARY_SENSOR,
     Platform.MEDIA_PLAYER,
+    Platform.NUMBER,
     Platform.REMOTE,
     Platform.SELECT,
     Platform.SENSOR,

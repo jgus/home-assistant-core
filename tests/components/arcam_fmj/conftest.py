@@ -128,6 +128,12 @@ def _build_state_mock(client: Mock, zone: int, model: str | None) -> Mock:
     state.get_now_playing.return_value = None
     state.get_bluetooth_status.return_value = (None, None)
     state.get_room_eq_names.return_value = None
+    state.get_bass_equalization.return_value = None
+    state.get_treble_equalization.return_value = None
+    state.get_balance.return_value = None
+    state.get_subwoofer_trim.return_value = None
+    state.get_sub_stereo_trim.return_value = None
+    state.get_lipsync_delay.return_value = None
     state.to_dict.return_value = {
         "POWER": True,
         "VOLUME": 0.0,
