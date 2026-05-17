@@ -76,12 +76,13 @@ def client_fixture() -> Generator[Mock]:
     queue.put_nowait(CancelledError())
 
 
-@pytest.fixture(name="state_1")
-def state_1_fixture(client: Mock) -> State:
-    """Get a mocked state."""
+def _build_state_mock(client: Mock, zone: int) -> Mock:
+    """Build a mocked State for a given zone."""
     state = Mock(State)
     state.client = client
-    state.zn = 1
+    state.zn = zone
+    state.model = None
+    state.revision = None
     state.get_power.return_value = True
     state.get_volume.return_value = 0.0
     state.get_source.return_value = None
@@ -92,30 +93,38 @@ def state_1_fixture(client: Mock) -> State:
     state.get_mute.return_value = None
     state.get_decode_modes.return_value = []
     state.get_decode_mode.return_value = None
+    state.to_dict.return_value = {
+        "POWER": True,
+        "VOLUME": 0.0,
+        "SOURCE": None,
+        "MUTE": None,
+        "MENU": None,
+        "INCOMING_VIDEO_PARAMETERS": None,
+        "INCOMING_AUDIO_FORMAT": (None, None),
+        "INCOMING_AUDIO_SAMPLE_RATE": 0,
+        "DECODE_MODE_2CH": None,
+        "DECODE_MODE_MCH": None,
+        "DAB_STATION": None,
+        "DLS_PDT": None,
+        "RDS_INFORMATION": None,
+        "TUNER_PRESET": None,
+        "PRESET_DETAIL": None,
+    }
     state.__aenter__ = AsyncMock()
     state.__aexit__ = AsyncMock()
     return state
+
+
+@pytest.fixture(name="state_1")
+def state_1_fixture(client: Mock) -> State:
+    """Get a mocked state."""
+    return _build_state_mock(client, 1)
 
 
 @pytest.fixture(name="state_2")
 def state_2_fixture(client: Mock) -> State:
     """Get a mocked state."""
-    state = Mock(State)
-    state.client = client
-    state.zn = 2
-    state.get_power.return_value = True
-    state.get_volume.return_value = 0.0
-    state.get_source.return_value = None
-    state.get_source_list.return_value = []
-    state.get_incoming_audio_format.return_value = (None, None)
-    state.get_incoming_video_parameters.return_value = None
-    state.get_incoming_audio_sample_rate.return_value = 0
-    state.get_mute.return_value = None
-    state.get_decode_modes.return_value = []
-    state.get_decode_mode.return_value = None
-    state.__aenter__ = AsyncMock()
-    state.__aexit__ = AsyncMock()
-    return state
+    return _build_state_mock(client, 2)
 
 
 @pytest.fixture(name="mock_config_entry")

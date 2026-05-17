@@ -1,0 +1,71 @@
+# serializer version: 1
+# name: test_entry_diagnostics
+  dict({
+    'client': dict({
+      'connected': True,
+    }),
+    'entry': dict({
+      'data': dict({
+        'host': '**REDACTED**',
+        'port': 50000,
+      }),
+      'minor_version': 1,
+      'unique_id_set': True,
+      'version': 1,
+    }),
+    'zones': dict({
+      '1': dict({
+        'last_exception': None,
+        'last_update_success': True,
+        'model': None,
+        'revision': None,
+        'state': dict({
+          'DAB_STATION': None,
+          'DECODE_MODE_2CH': None,
+          'DECODE_MODE_MCH': None,
+          'DLS_PDT': None,
+          'INCOMING_AUDIO_FORMAT': list([
+            None,
+            None,
+          ]),
+          'INCOMING_AUDIO_SAMPLE_RATE': 0,
+          'INCOMING_VIDEO_PARAMETERS': None,
+          'MENU': None,
+          'MUTE': None,
+          'POWER': True,
+          'PRESET_DETAIL': None,
+          'RDS_INFORMATION': None,
+          'SOURCE': None,
+          'TUNER_PRESET': None,
+          'VOLUME': 0.0,
+        }),
+      }),
+      '2': dict({
+        'last_exception': None,
+        'last_update_success': True,
+        'model': None,
+        'revision': None,
+        'state': dict({
+          'DAB_STATION': None,
+          'DECODE_MODE_2CH': None,
+          'DECODE_MODE_MCH': None,
+          'DLS_PDT': None,
+          'INCOMING_AUDIO_FORMAT': list([
+            None,
+            None,
+          ]),
+          'INCOMING_AUDIO_SAMPLE_RATE': 0,
+          'INCOMING_VIDEO_PARAMETERS': None,
+          'MENU': None,
+          'MUTE': None,
+          'POWER': True,
+          'PRESET_DETAIL': None,
+          'RDS_INFORMATION': None,
+          'SOURCE': None,
+          'TUNER_PRESET': None,
+          'VOLUME': 0.0,
+        }),
+      }),
+    }),
+  })
+# ---
