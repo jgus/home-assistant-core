@@ -171,7 +171,7 @@
       "message": "Invalid preset media id: {media}."
     },
     "unsupported_command": {
-      "message": "Remote command {command} is not supported on this Arcam FMJ model or zone."
+      "message": "Command {command} is not supported on this Arcam FMJ model or zone."
     },
     "unsupported_media": {
       "message": "Unsupported media: {media}."

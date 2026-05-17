@@ -31,6 +31,15 @@ def convert_exception[**_P, _R](
     return _convert_exception
 
 
+def unsupported_command_error(command: str) -> HomeAssistantError:
+    """Build a translated error for a command the model or zone does not support."""
+    return HomeAssistantError(
+        translation_domain=DOMAIN,
+        translation_key="unsupported_command",
+        translation_placeholders={"command": command},
+    )
+
+
 class ArcamFmjEntity(CoordinatorEntity[ArcamFmjCoordinator]):
     """Base entity for Arcam FMJ."""
 

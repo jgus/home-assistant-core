@@ -14,12 +14,12 @@ from homeassistant.components.remote import (
     RemoteEntity,
 )
 from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
+from homeassistant.exceptions import ServiceValidationError
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from .const import DOMAIN
 from .coordinator import ArcamFmjConfigEntry, ArcamFmjCoordinator
-from .entity import ArcamFmjEntity, convert_exception
+from .entity import ArcamFmjEntity, convert_exception, unsupported_command_error
 
 PARALLEL_UPDATES = 0
 
@@ -116,8 +116,4 @@ class ArcamFmjRemote(ArcamFmjEntity, RemoteEntity):
                 try:
                     await sender(self._state)
                 except ValueError as err:
-                    raise HomeAssistantError(
-                        translation_domain=DOMAIN,
-                        translation_key="unsupported_command",
-                        translation_placeholders={"command": name},
-                    ) from err
+                    raise unsupported_command_error(name) from err
