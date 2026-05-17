@@ -140,6 +140,11 @@ def _build_state_mock(client: Mock, zone: int, model: str | None) -> Mock:
     state.get_output_temperature.return_value = None
     state.get_dc_offset.return_value = None
     state.get_short_circuit_status.return_value = None
+    state.get_max_turn_on_volume.return_value = None
+    state.get_max_volume.return_value = None
+    state.get_max_streaming_volume.return_value = None
+    state.get_dolby_pliix_dimension.return_value = None
+    state.get_dolby_pliix_centre_width.return_value = None
     state.to_dict.return_value = {
         "POWER": True,
         "VOLUME": 0.0,

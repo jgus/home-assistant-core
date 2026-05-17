@@ -155,3 +155,74 @@ async def test_set_value_connection_failed(
             {ATTR_ENTITY_ID: ENTITY_BASS, ATTR_VALUE: 0},
             blocking=True,
         )
+
+
+@pytest.mark.parametrize("model", ["SA30"], indirect=True)
+@pytest.mark.parametrize(
+    ("key", "method", "value"),
+    [
+        ("max_turn_on_volume", "set_max_turn_on_volume", 30),
+        ("max_volume", "set_max_volume", 75),
+        ("max_streaming_volume", "set_max_streaming_volume", 50),
+    ],
+)
+@pytest.mark.usefixtures("player_setup")
+async def test_app_safety_volume_ceilings(
+    hass: HomeAssistant,
+    state_1: State,
+    key: str,
+    method: str,
+    value: int,
+) -> None:
+    """Volume ceilings appear on app-safety models and accept int values."""
+    await hass.services.async_call(
+        NUMBER_DOMAIN,
+        SERVICE_SET_VALUE,
+        {ATTR_ENTITY_ID: f"number.arcam_fmj_127_0_0_1_{key}", ATTR_VALUE: value},
+        blocking=True,
+    )
+    getattr(state_1, method).assert_called_once_with(value)
+
+
+@pytest.mark.parametrize("model", ["AVR450"], indirect=True)
+@pytest.mark.parametrize(
+    ("key", "method"),
+    [
+        ("dolby_plii_iix_music_dimension", "set_dolby_pliix_dimension"),
+        ("dolby_plii_iix_music_centre_width", "set_dolby_pliix_centre_width"),
+    ],
+)
+@pytest.mark.usefixtures("player_setup")
+async def test_dolby_pliix_number(
+    hass: HomeAssistant,
+    state_1: State,
+    key: str,
+    method: str,
+) -> None:
+    """Dolby PLII/IIx number entities appear on 450 series only."""
+    await hass.services.async_call(
+        NUMBER_DOMAIN,
+        SERVICE_SET_VALUE,
+        {ATTR_ENTITY_ID: f"number.arcam_fmj_127_0_0_1_{key}", ATTR_VALUE: 3},
+        blocking=True,
+    )
+    getattr(state_1, method).assert_called_once_with(3)
+
+
+@pytest.mark.usefixtures("player_setup")
+async def test_volume_ceilings_not_on_default_model(
+    hass: HomeAssistant,
+    entity_registry: er.EntityRegistry,
+    mock_config_entry: MockConfigEntry,
+) -> None:
+    """The default test model (AVR550) isn't in APIVERSION_APP_SAFETY_SERIES."""
+    entries = er.async_entries_for_config_entry(
+        entity_registry, mock_config_entry.entry_id
+    )
+    keys = {entry.unique_id.rsplit("-", 1)[-1] for entry in entries}
+    assert "max_volume" not in keys
+    assert "max_turn_on_volume" not in keys
+    assert "max_streaming_volume" not in keys
+    assert "dolby_pliix_dimension" not in keys
+
+

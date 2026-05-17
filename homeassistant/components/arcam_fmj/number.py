@@ -3,7 +3,12 @@
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 
-from arcam.fmj import APIVERSION_AVR_AND_SA_SERIES, APIVERSION_AVR_SERIES
+from arcam.fmj import (
+    APIVERSION_450_SERIES,
+    APIVERSION_APP_SAFETY_SERIES,
+    APIVERSION_AVR_AND_SA_SERIES,
+    APIVERSION_AVR_SERIES,
+)
 from arcam.fmj.state import State
 
 from homeassistant.components.number import (
@@ -110,6 +115,71 @@ NUMBERS: tuple[ArcamFmjNumberEntityDescription, ...] = (
         mode=NumberMode.SLIDER,
         value_fn=lambda state: state.get_lipsync_delay(),
         set_fn=lambda state, value: state.set_lipsync_delay(int(value)),
+    ),
+    ArcamFmjNumberEntityDescription(
+        key="max_turn_on_volume",
+        translation_key="max_turn_on_volume",
+        entity_category=EntityCategory.CONFIG,
+        api_versions=APIVERSION_APP_SAFETY_SERIES,
+        zones=frozenset({1}),
+        native_min_value=0,
+        native_max_value=99,
+        native_step=1,
+        mode=NumberMode.SLIDER,
+        value_fn=lambda state: state.get_max_turn_on_volume(),
+        set_fn=lambda state, value: state.set_max_turn_on_volume(int(value)),
+    ),
+    ArcamFmjNumberEntityDescription(
+        key="max_volume",
+        translation_key="max_volume",
+        entity_category=EntityCategory.CONFIG,
+        api_versions=APIVERSION_APP_SAFETY_SERIES,
+        zones=frozenset({1}),
+        native_min_value=0,
+        native_max_value=99,
+        native_step=1,
+        mode=NumberMode.SLIDER,
+        value_fn=lambda state: state.get_max_volume(),
+        set_fn=lambda state, value: state.set_max_volume(int(value)),
+    ),
+    ArcamFmjNumberEntityDescription(
+        key="max_streaming_volume",
+        translation_key="max_streaming_volume",
+        entity_category=EntityCategory.CONFIG,
+        api_versions=APIVERSION_APP_SAFETY_SERIES,
+        zones=frozenset({1}),
+        native_min_value=0,
+        native_max_value=99,
+        native_step=1,
+        mode=NumberMode.SLIDER,
+        value_fn=lambda state: state.get_max_streaming_volume(),
+        set_fn=lambda state, value: state.set_max_streaming_volume(int(value)),
+    ),
+    ArcamFmjNumberEntityDescription(
+        key="dolby_pliix_dimension",
+        translation_key="dolby_pliix_dimension",
+        entity_category=EntityCategory.CONFIG,
+        api_versions=APIVERSION_450_SERIES,
+        zones=frozenset({1}),
+        native_min_value=0,
+        native_max_value=6,
+        native_step=1,
+        mode=NumberMode.SLIDER,
+        value_fn=lambda state: state.get_dolby_pliix_dimension(),
+        set_fn=lambda state, value: state.set_dolby_pliix_dimension(int(value)),
+    ),
+    ArcamFmjNumberEntityDescription(
+        key="dolby_pliix_centre_width",
+        translation_key="dolby_pliix_centre_width",
+        entity_category=EntityCategory.CONFIG,
+        api_versions=APIVERSION_450_SERIES,
+        zones=frozenset({1}),
+        native_min_value=0,
+        native_max_value=7,
+        native_step=1,
+        mode=NumberMode.SLIDER,
+        value_fn=lambda state: state.get_dolby_pliix_centre_width(),
+        set_fn=lambda state, value: state.set_dolby_pliix_centre_width(int(value)),
     ),
 )
 

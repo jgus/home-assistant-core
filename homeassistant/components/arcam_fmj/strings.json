@@ -184,8 +184,23 @@
       "bass_equalization": {
         "name": "Bass equalization"
       },
+      "dolby_pliix_centre_width": {
+        "name": "Dolby PLII/IIx music centre width"
+      },
+      "dolby_pliix_dimension": {
+        "name": "Dolby PLII/IIx music dimension"
+      },
       "lipsync_delay": {
         "name": "Lip sync delay"
+      },
+      "max_streaming_volume": {
+        "name": "Max streaming volume"
+      },
+      "max_turn_on_volume": {
+        "name": "Max turn-on volume"
+      },
+      "max_volume": {
+        "name": "Max volume"
       },
       "sub_stereo_trim": {
         "name": "Sub stereo trim"
