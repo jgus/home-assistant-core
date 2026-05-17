@@ -126,3 +126,68 @@ async def test_sensor_enum_unknown(
     assert _get("incoming_audio_configuration") == "unknown"
     assert _get("incoming_video_aspect_ratio") == "unknown"
     assert _get("incoming_video_colorspace") == "unknown"
+
+
+@pytest.mark.usefixtures("entity_registry_enabled_by_default", "player_setup")
+async def test_software_version(
+    hass: HomeAssistant,
+    state_1: State,
+    client: Mock,
+) -> None:
+    """Software version sensor reflects the library value."""
+    state_1.get_software_version.return_value = "1.23"
+    client.notify_data_updated()
+    await hass.async_block_till_done()
+
+    state = hass.states.get("sensor.arcam_fmj_127_0_0_1_software_version")
+    assert state is not None
+    assert state.state == "1.23"
+
+
+@pytest.mark.parametrize("model", ["SA30"], indirect=True)
+@pytest.mark.parametrize(
+    ("key", "method", "value"),
+    [
+        ("lifter_temperature", "get_lifter_temperature", 42),
+        ("output_temperature", "get_output_temperature", 55),
+        ("dc_offset", "get_dc_offset", 12),
+        ("short_circuit_status", "get_short_circuit_status", 0),
+    ],
+)
+@pytest.mark.usefixtures("entity_registry_enabled_by_default", "player_setup")
+async def test_amp_diagnostics(
+    hass: HomeAssistant,
+    state_1: State,
+    client: Mock,
+    key: str,
+    method: str,
+    value: int,
+) -> None:
+    """Amp-diagnostic sensors appear on Class-G models and read live values."""
+    getattr(state_1, method).return_value = value
+    client.notify_data_updated()
+    await hass.async_block_till_done()
+
+    state = hass.states.get(f"sensor.arcam_fmj_127_0_0_1_{key}")
+    assert state is not None
+    assert state.state == str(value)
+
+
+@pytest.mark.parametrize("model", ["AVR550"], indirect=True)
+@pytest.mark.usefixtures("player_setup")
+async def test_amp_diagnostics_not_on_avr(
+    hass: HomeAssistant,
+    entity_registry: er.EntityRegistry,
+    mock_config_entry: MockConfigEntry,
+) -> None:
+    """Amp diagnostics don't show up on plain AVR models."""
+    entries = er.async_entries_for_config_entry(
+        entity_registry, mock_config_entry.entry_id
+    )
+    keys = {entry.unique_id.rsplit("-", 1)[-1] for entry in entries}
+    assert "lifter_temperature" not in keys
+    assert "output_temperature" not in keys
+    assert "dc_offset" not in keys
+    assert "short_circuit_status" not in keys
+    # Software version is universal — it does show up.
+    assert "software_version" in keys

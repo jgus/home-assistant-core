@@ -32,6 +32,12 @@
       },
       "incoming_video_vertical_resolution": {
         "default": "mdi:arrow-expand-vertical"
+      },
+      "short_circuit_status": {
+        "default": "mdi:flash-alert"
+      },
+      "software_version": {
+        "default": "mdi:chip"
       }
     }
   }

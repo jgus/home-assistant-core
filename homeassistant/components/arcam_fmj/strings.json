@@ -160,6 +160,21 @@
       },
       "incoming_video_vertical_resolution": {
         "name": "Incoming video vertical resolution"
+      },
+      "dc_offset": {
+        "name": "DC offset"
+      },
+      "lifter_temperature": {
+        "name": "Lifter temperature"
+      },
+      "output_temperature": {
+        "name": "Output temperature"
+      },
+      "short_circuit_status": {
+        "name": "Short-circuit status"
+      },
+      "software_version": {
+        "name": "Software version"
       }
     },
     "number": {

@@ -135,6 +135,11 @@ def _build_state_mock(client: Mock, zone: int, model: str | None) -> Mock:
     state.get_sub_stereo_trim.return_value = None
     state.get_lipsync_delay.return_value = None
     state.get_headphones.return_value = None
+    state.get_software_version.return_value = None
+    state.get_lifter_temperature.return_value = None
+    state.get_output_temperature.return_value = None
+    state.get_dc_offset.return_value = None
+    state.get_short_circuit_status.return_value = None
     state.to_dict.return_value = {
         "POWER": True,
         "VOLUME": 0.0,
