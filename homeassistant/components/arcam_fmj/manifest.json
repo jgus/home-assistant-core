@@ -9,7 +9,7 @@
   "loggers": ["arcam"],
   "quality_scale": "bronze",
   "requirements": [
-    "arcam-fmj @ git+https://github.com/jgus/arcam_fmj@2730e553b0d08360839bbcc2a63ea582d4fbec87"
+    "arcam-fmj @ git+https://github.com/jgus/arcam_fmj@dd146aecc3fa29b8aa698e34acf6bcac2a41ac7d"
   ],
   "ssdp": [
     {
